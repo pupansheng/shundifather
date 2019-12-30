@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.pps.mapper.TbUserMapper" >
+  <resultMap id="BaseResultMap" type="com.pps.pojo.TbUser" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="headImage" property="headimage" jdbcType="VARCHAR" />
+    <result column="openId" property="openid" jdbcType="CHAR" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="password" property="password" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="userType" property="usertype" jdbcType="INTEGER" />
+    <result column="lerver" property="lerver" jdbcType="INTEGER" />
+    <result column="money" property="money" jdbcType="DECIMAL" />
+    <result column="bk1" property="bk1" jdbcType="VARCHAR" />
+    <result column="bk2" property="bk2" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="realName" property="realname" jdbcType="VARCHAR" />
+    <result column="nativePlace" property="nativeplace" jdbcType="VARCHAR" />
+    <result column="nowPlace" property="nowplace" jdbcType="VARCHAR" />
+    <result column="idCardImage1" property="idcardimage1" jdbcType="VARCHAR" />
+    <result column="idCardImage2" property="idcardimage2" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    id, headImage, openId, username, password, phone, userType, lerver, money, bk1, bk2, 
+    status, realName, nativePlace, nowPlace, idCardImage1, idCardImage2
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.pps.pojo.TbUserExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from tb_user
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from tb_user
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from tb_user
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.pps.pojo.TbUserExample" >
+    delete from tb_user
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.pps.pojo.TbUser" >
+    insert into tb_user (id, headImage, openId, 
+      username, password, phone, 
+      userType, lerver, money, 
+      bk1, bk2, status, realName, 
+      nativePlace, nowPlace, idCardImage1, 
+      idCardImage2)
+    values (#{id,jdbcType=INTEGER}, #{headimage,jdbcType=VARCHAR}, #{openid,jdbcType=CHAR}, 
+      #{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, 
+      #{usertype,jdbcType=INTEGER}, #{lerver,jdbcType=INTEGER}, #{money,jdbcType=DECIMAL}, 
+      #{bk1,jdbcType=VARCHAR}, #{bk2,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{realname,jdbcType=VARCHAR}, 
+      #{nativeplace,jdbcType=VARCHAR}, #{nowplace,jdbcType=VARCHAR}, #{idcardimage1,jdbcType=VARCHAR}, 
+      #{idcardimage2,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.pps.pojo.TbUser" >
+    insert into tb_user
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="headimage != null" >
+        headImage,
+      </if>
+      <if test="openid != null" >
+        openId,
+      </if>
+      <if test="username != null" >
+        username,
+      </if>
+      <if test="password != null" >
+        password,
+      </if>
+      <if test="phone != null" >
+        phone,
+      </if>
+      <if test="usertype != null" >
+        userType,
+      </if>
+      <if test="lerver != null" >
+        lerver,
+      </if>
+      <if test="money != null" >
+        money,
+      </if>
+      <if test="bk1 != null" >
+        bk1,
+      </if>
+      <if test="bk2 != null" >
+        bk2,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="realname != null" >
+        realName,
+      </if>
+      <if test="nativeplace != null" >
+        nativePlace,
+      </if>
+      <if test="nowplace != null" >
+        nowPlace,
+      </if>
+      <if test="idcardimage1 != null" >
+        idCardImage1,
+      </if>
+      <if test="idcardimage2 != null" >
+        idCardImage2,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="headimage != null" >
+        #{headimage,jdbcType=VARCHAR},
+      </if>
+      <if test="openid != null" >
+        #{openid,jdbcType=CHAR},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null" >
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="usertype != null" >
+        #{usertype,jdbcType=INTEGER},
+      </if>
+      <if test="lerver != null" >
+        #{lerver,jdbcType=INTEGER},
+      </if>
+      <if test="money != null" >
+        #{money,jdbcType=DECIMAL},
+      </if>
+      <if test="bk1 != null" >
+        #{bk1,jdbcType=VARCHAR},
+      </if>
+      <if test="bk2 != null" >
+        #{bk2,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="realname != null" >
+        #{realname,jdbcType=VARCHAR},
+      </if>
+      <if test="nativeplace != null" >
+        #{nativeplace,jdbcType=VARCHAR},
+      </if>
+      <if test="nowplace != null" >
+        #{nowplace,jdbcType=VARCHAR},
+      </if>
+      <if test="idcardimage1 != null" >
+        #{idcardimage1,jdbcType=VARCHAR},
+      </if>
+      <if test="idcardimage2 != null" >
+        #{idcardimage2,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.pps.pojo.TbUserExample" resultType="java.lang.Integer" >
+    select count(*) from tb_user
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update tb_user
+    <set >
+      <if test="record.id != null" >
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.headimage != null" >
+        headImage = #{record.headimage,jdbcType=VARCHAR},
+      </if>
+      <if test="record.openid != null" >
+        openId = #{record.openid,jdbcType=CHAR},
+      </if>
+      <if test="record.username != null" >
+        username = #{record.username,jdbcType=VARCHAR},
+      </if>
+      <if test="record.password != null" >
+        password = #{record.password,jdbcType=VARCHAR},
+      </if>
+      <if test="record.phone != null" >
+        phone = #{record.phone,jdbcType=VARCHAR},
+      </if>
+      <if test="record.usertype != null" >
+        userType = #{record.usertype,jdbcType=INTEGER},
+      </if>
+      <if test="record.lerver != null" >
+        lerver = #{record.lerver,jdbcType=INTEGER},
+      </if>
+      <if test="record.money != null" >
+        money = #{record.money,jdbcType=DECIMAL},
+      </if>
+      <if test="record.bk1 != null" >
+        bk1 = #{record.bk1,jdbcType=VARCHAR},
+      </if>
+      <if test="record.bk2 != null" >
+        bk2 = #{record.bk2,jdbcType=VARCHAR},
+      </if>
+      <if test="record.status != null" >
+        status = #{record.status,jdbcType=INTEGER},
+      </if>
+      <if test="record.realname != null" >
+        realName = #{record.realname,jdbcType=VARCHAR},
+      </if>
+      <if test="record.nativeplace != null" >
+        nativePlace = #{record.nativeplace,jdbcType=VARCHAR},
+      </if>
+      <if test="record.nowplace != null" >
+        nowPlace = #{record.nowplace,jdbcType=VARCHAR},
+      </if>
+      <if test="record.idcardimage1 != null" >
+        idCardImage1 = #{record.idcardimage1,jdbcType=VARCHAR},
+      </if>
+      <if test="record.idcardimage2 != null" >
+        idCardImage2 = #{record.idcardimage2,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update tb_user
+    set id = #{record.id,jdbcType=INTEGER},
+      headImage = #{record.headimage,jdbcType=VARCHAR},
+      openId = #{record.openid,jdbcType=CHAR},
+      username = #{record.username,jdbcType=VARCHAR},
+      password = #{record.password,jdbcType=VARCHAR},
+      phone = #{record.phone,jdbcType=VARCHAR},
+      userType = #{record.usertype,jdbcType=INTEGER},
+      lerver = #{record.lerver,jdbcType=INTEGER},
+      money = #{record.money,jdbcType=DECIMAL},
+      bk1 = #{record.bk1,jdbcType=VARCHAR},
+      bk2 = #{record.bk2,jdbcType=VARCHAR},
+      status = #{record.status,jdbcType=INTEGER},
+      realName = #{record.realname,jdbcType=VARCHAR},
+      nativePlace = #{record.nativeplace,jdbcType=VARCHAR},
+      nowPlace = #{record.nowplace,jdbcType=VARCHAR},
+      idCardImage1 = #{record.idcardimage1,jdbcType=VARCHAR},
+      idCardImage2 = #{record.idcardimage2,jdbcType=VARCHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.pps.pojo.TbUser" >
+    update tb_user
+    <set >
+      <if test="headimage != null" >
+        headImage = #{headimage,jdbcType=VARCHAR},
+      </if>
+      <if test="openid != null" >
+        openId = #{openid,jdbcType=CHAR},
+      </if>
+      <if test="username != null" >
+        username = #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null" >
+        password = #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="usertype != null" >
+        userType = #{usertype,jdbcType=INTEGER},
+      </if>
+      <if test="lerver != null" >
+        lerver = #{lerver,jdbcType=INTEGER},
+      </if>
+      <if test="money != null" >
+        money = #{money,jdbcType=DECIMAL},
+      </if>
+      <if test="bk1 != null" >
+        bk1 = #{bk1,jdbcType=VARCHAR},
+      </if>
+      <if test="bk2 != null" >
+        bk2 = #{bk2,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="realname != null" >
+        realName = #{realname,jdbcType=VARCHAR},
+      </if>
+      <if test="nativeplace != null" >
+        nativePlace = #{nativeplace,jdbcType=VARCHAR},
+      </if>
+      <if test="nowplace != null" >
+        nowPlace = #{nowplace,jdbcType=VARCHAR},
+      </if>
+      <if test="idcardimage1 != null" >
+        idCardImage1 = #{idcardimage1,jdbcType=VARCHAR},
+      </if>
+      <if test="idcardimage2 != null" >
+        idCardImage2 = #{idcardimage2,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.pps.pojo.TbUser" >
+    update tb_user
+    set headImage = #{headimage,jdbcType=VARCHAR},
+      openId = #{openid,jdbcType=CHAR},
+      username = #{username,jdbcType=VARCHAR},
+      password = #{password,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      userType = #{usertype,jdbcType=INTEGER},
+      lerver = #{lerver,jdbcType=INTEGER},
+      money = #{money,jdbcType=DECIMAL},
+      bk1 = #{bk1,jdbcType=VARCHAR},
+      bk2 = #{bk2,jdbcType=VARCHAR},
+      status = #{status,jdbcType=INTEGER},
+      realName = #{realname,jdbcType=VARCHAR},
+      nativePlace = #{nativeplace,jdbcType=VARCHAR},
+      nowPlace = #{nowplace,jdbcType=VARCHAR},
+      idCardImage1 = #{idcardimage1,jdbcType=VARCHAR},
+      idCardImage2 = #{idcardimage2,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

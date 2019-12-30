@@ -1,0 +1,5 @@
+# Project exclude paths
+/shundi-common/target/
+/shundi-privider-8001/target/
+/shundi-server-9001/target/
+/shundi-server-9002/target/

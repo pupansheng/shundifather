@@ -1,0 +1,54 @@
+server:
+  port: 8081
+spring:
+  datasource:
+#   数据源基本配置
+    username: root
+    password: pps123
+    #driver-class-name: com.mysql.jdbc.Driver
+    #url: jdbc:mysql://120.79.204.37:3306/sajt?characterEncoding=utf-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/shundi?useUnicode=true&characterEncoding=UTF-8&userSSL=false&serverTimezone=GMT%2B8
+    type: com.alibaba.druid.pool.DruidDataSource
+#   数据源其他配置
+    initialSize: 5
+    minIdle: 50
+    maxActive: 100
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+  application:
+    name: suanjiaotong-service
+#
+mybatis:
+  # 指定全局配置文件位置
+  config-location: classpath:mybatis/mybatis-config.xml
+  # 指定sql映射文件位置
+  mapper-locations: classpath:mybatis/mapper/*.xml
+pagehelper:
+    helperDialect: mysql                           #分页插件方言选择
+    reasonable: true                               #合理化参数，设为true时pageNum<=0 时会查第一页， pageNum>pages（超过总数时），会查询最后一页
+    supportMethodsArguments: true
+
+
+
+eureka:
+  client: #客户端注册进eureka服务列表内
+    service-url: 
+      #defaultZone: http://localhost:7001/eureka
+       defaultZone: http://server9001.com:9001/eureka/,http://server9002.com:9002/eureka/
+  instance:
+    instance-id: microservicecloud-service8001
+    prefer-ip-address: true     #访问路径可以显示IP地址     
+ 
+info: 
+  app.name: shundi
+  company.name: www.shundi.com
+  build.artifactId: $project.artifactId$
+  build.version: $project.version$
+
