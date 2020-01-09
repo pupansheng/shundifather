@@ -23,7 +23,7 @@ public class MyExceptionHandler {
     @ExceptionHandler(NoAuthorizationException.class)
     public Map<String,Object> handleException(NoAuthorizationException e){
         Map<String,Object> map = new HashMap<>();
-        map.put("code","10000");
+        map.put("code","1000");
         map.put("message","权限不足");
         return map;
     }

@@ -206,7 +206,7 @@ public class UserLoginController {
             long l = date.getTime() - saveDate.getTime();
             if (l > 7 * 24 * 3600 * 1000) {
 
-                mongoTemplate.remove(query);
+                mongoTemplate.remove(query,"shundiStorage");
                 return new Result(false, "登录过期请重新登录");
             } else {
 

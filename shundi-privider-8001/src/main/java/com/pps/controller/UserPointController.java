@@ -1,8 +1,11 @@
 package com.pps.controller;
 
 import com.pps.MyLog;
+import com.pps.pojo.exception.UnknowException;
 import com.pps.pojo.group.Result;
 import com.pps.pojo.mongo.UserPoint;
+import com.pps.pojo.status.OrderStatus;
+import com.pps.pojo.status.PackageStatus;
 import com.pps.service.UserPointService;
 import com.pps.util.IdWorker;
 import io.swagger.annotations.Api;
@@ -13,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -118,10 +122,8 @@ public class UserPointController {
 
     })
     @RequestMapping(value = "/userPoint/findOne/{id}",method = RequestMethod.POST)
-    public UserPoint findUserPointById(@PathVariable("id") String id){
-
-        return    userPointService.getUserPoint(id);
-
+    public Result findUserPointById(@PathVariable("id") String id){
+        return   new Result(true,userPointService.getUserPoint(id));
     }
 
     /*
@@ -138,9 +140,9 @@ public class UserPointController {
 
     })
     @RequestMapping(value = "/userPoint/findMany/{id}",method = RequestMethod.POST)
-    public List<UserPoint> findUserPointByUserId(@PathVariable("id") String id){
+    public Result findUserPointByUserId(@PathVariable("id") String id){
 
-        return    userPointService.getUserPointsByUserId(id);
+        return    new Result(true,userPointService.getUserPointsByUserId(id));
 
     }
 
@@ -149,6 +151,40 @@ public class UserPointController {
         pageNum-=1;
         MyLog.logger.info("pageNum="+pageNum);
         return  userPointService.getUserPointByUserIdWithPage(pageNum,pageSize,status,userId);
+    }
+
+
+    @ApiOperation(value = "用户取消已提交物品展示", notes = "")
+    @PostMapping("/userPoint/updateStatus/cancel")
+    public  Result updateStatus1(@RequestBody UserPoint userPoint){
+
+
+        return  userPointService.updateStatus(userPoint, PackageStatus.无效.getCode());
+
+    }
+    @ApiOperation(value = "用户同意接单", notes = "")
+    @PostMapping("/userPoint/updateStatus/agree")
+    public  Result updateStatus2(@RequestBody UserPoint userPoint){
+
+        return  userPointService.agreeOrReject(userPoint, OrderStatus.已同意.getCode());
+
+    }
+    @ApiOperation(value = "用户拒绝接单", notes = "")
+    @PostMapping("/userPoint/updateStatus/reject")
+    public  Result updateStatus3(@RequestBody UserPoint userPoint){
+
+
+        return  userPointService.agreeOrReject(userPoint,OrderStatus.被拒绝.getCode());
+
+    }
+
+
+
+    @GetMapping("/query/getPackageNum")
+    public  Result getNUm(Integer userId){
+
+        return  userPointService.getPackageNum(userId);
+
     }
 
 }

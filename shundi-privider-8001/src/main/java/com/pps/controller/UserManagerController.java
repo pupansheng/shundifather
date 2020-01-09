@@ -219,6 +219,12 @@ public class UserManagerController {
 
         return  result;
     }
+    @GetMapping("/getBasicInfo/{id}")
+    public  Result getBASIC(@PathVariable("id") String integer){
+
+        return  userService.findUserById(integer);
+
+    }
 
 
 }

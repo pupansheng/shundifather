@@ -7,6 +7,15 @@
     <result column="userId" property="userid" jdbcType="INTEGER" />
     <result column="ownerId" property="ownerid" jdbcType="INTEGER" />
     <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="goodsImage" property="goodsimage" jdbcType="VARCHAR" />
+    <result column="goodsName" property="goodsname" jdbcType="VARCHAR" />
+    <result column="goodsWeight" property="goodsweight" jdbcType="VARCHAR" />
+    <result column="goodsVolume" property="goodsvolume" jdbcType="VARCHAR" />
+    <result column="talkPrice" property="talkprice" jdbcType="DOUBLE" />
+    <result column="bk1" property="bk1" jdbcType="VARCHAR" />
+    <result column="bk2" property="bk2" jdbcType="VARCHAR" />
+    <result column="bk3" property="bk3" jdbcType="VARCHAR" />
+    <result column="goodsStatus" property="goodsstatus" jdbcType="INTEGER" />
   </resultMap>
   <sql id="Example_Where_Clause" >
     <where >
@@ -67,7 +76,8 @@
     </where>
   </sql>
   <sql id="Base_Column_List" >
-    id, userPointId, userId, ownerId, status
+    id, userPointId, userId, ownerId, status, goodsImage, goodsName, goodsWeight, goodsVolume, 
+    talkPrice, bk1, bk2, bk3, goodsStatus
   </sql>
   <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.pps.pojo.TbOrderExample" >
     select
@@ -104,11 +114,20 @@
       SELECT LAST_INSERT_ID()
     </selectKey>
     insert into tb_order (id, userPointId, userId, 
-      ownerId, status)
+      ownerId, status, goodsImage, 
+      goodsName, goodsWeight, goodsVolume, 
+      talkPrice, bk1, bk2, 
+      bk3, goodsStatus)
     values (#{id,jdbcType=INTEGER}, #{userpointid,jdbcType=VARCHAR}, #{userid,jdbcType=INTEGER}, 
-      #{ownerid,jdbcType=INTEGER}, #{status,jdbcType=INTEGER})
+      #{ownerid,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, #{goodsimage,jdbcType=VARCHAR}, 
+      #{goodsname,jdbcType=VARCHAR}, #{goodsweight,jdbcType=VARCHAR}, #{goodsvolume,jdbcType=VARCHAR}, 
+      #{talkprice,jdbcType=DOUBLE}, #{bk1,jdbcType=VARCHAR}, #{bk2,jdbcType=VARCHAR}, 
+      #{bk3,jdbcType=VARCHAR}, #{goodsstatus,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.pps.pojo.TbOrder" >
+    <selectKey keyColumn="id" resultType="int" keyProperty="id" order="AFTER">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
     insert into tb_order
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -126,6 +145,33 @@
       <if test="status != null" >
         status,
       </if>
+      <if test="goodsimage != null" >
+        goodsImage,
+      </if>
+      <if test="goodsname != null" >
+        goodsName,
+      </if>
+      <if test="goodsweight != null" >
+        goodsWeight,
+      </if>
+      <if test="goodsvolume != null" >
+        goodsVolume,
+      </if>
+      <if test="talkprice != null" >
+        talkPrice,
+      </if>
+      <if test="bk1 != null" >
+        bk1,
+      </if>
+      <if test="bk2 != null" >
+        bk2,
+      </if>
+      <if test="bk3 != null" >
+        bk3,
+      </if>
+      <if test="goodsstatus != null" >
+        goodsStatus,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -142,6 +188,33 @@
       </if>
       <if test="status != null" >
         #{status,jdbcType=INTEGER},
+      </if>
+      <if test="goodsimage != null" >
+        #{goodsimage,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsname != null" >
+        #{goodsname,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsweight != null" >
+        #{goodsweight,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsvolume != null" >
+        #{goodsvolume,jdbcType=VARCHAR},
+      </if>
+      <if test="talkprice != null" >
+        #{talkprice,jdbcType=DOUBLE},
+      </if>
+      <if test="bk1 != null" >
+        #{bk1,jdbcType=VARCHAR},
+      </if>
+      <if test="bk2 != null" >
+        #{bk2,jdbcType=VARCHAR},
+      </if>
+      <if test="bk3 != null" >
+        #{bk3,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsstatus != null" >
+        #{goodsstatus,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -169,6 +242,33 @@
       <if test="record.status != null" >
         status = #{record.status,jdbcType=INTEGER},
       </if>
+      <if test="record.goodsimage != null" >
+        goodsImage = #{record.goodsimage,jdbcType=VARCHAR},
+      </if>
+      <if test="record.goodsname != null" >
+        goodsName = #{record.goodsname,jdbcType=VARCHAR},
+      </if>
+      <if test="record.goodsweight != null" >
+        goodsWeight = #{record.goodsweight,jdbcType=VARCHAR},
+      </if>
+      <if test="record.goodsvolume != null" >
+        goodsVolume = #{record.goodsvolume,jdbcType=VARCHAR},
+      </if>
+      <if test="record.talkprice != null" >
+        talkPrice = #{record.talkprice,jdbcType=DOUBLE},
+      </if>
+      <if test="record.bk1 != null" >
+        bk1 = #{record.bk1,jdbcType=VARCHAR},
+      </if>
+      <if test="record.bk2 != null" >
+        bk2 = #{record.bk2,jdbcType=VARCHAR},
+      </if>
+      <if test="record.bk3 != null" >
+        bk3 = #{record.bk3,jdbcType=VARCHAR},
+      </if>
+      <if test="record.goodsstatus != null" >
+        goodsStatus = #{record.goodsstatus,jdbcType=INTEGER},
+      </if>
     </set>
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
@@ -180,7 +280,16 @@
       userPointId = #{record.userpointid,jdbcType=VARCHAR},
       userId = #{record.userid,jdbcType=INTEGER},
       ownerId = #{record.ownerid,jdbcType=INTEGER},
-      status = #{record.status,jdbcType=INTEGER}
+      status = #{record.status,jdbcType=INTEGER},
+      goodsImage = #{record.goodsimage,jdbcType=VARCHAR},
+      goodsName = #{record.goodsname,jdbcType=VARCHAR},
+      goodsWeight = #{record.goodsweight,jdbcType=VARCHAR},
+      goodsVolume = #{record.goodsvolume,jdbcType=VARCHAR},
+      talkPrice = #{record.talkprice,jdbcType=DOUBLE},
+      bk1 = #{record.bk1,jdbcType=VARCHAR},
+      bk2 = #{record.bk2,jdbcType=VARCHAR},
+      bk3 = #{record.bk3,jdbcType=VARCHAR},
+      goodsStatus = #{record.goodsstatus,jdbcType=INTEGER}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -200,6 +309,33 @@
       <if test="status != null" >
         status = #{status,jdbcType=INTEGER},
       </if>
+      <if test="goodsimage != null" >
+        goodsImage = #{goodsimage,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsname != null" >
+        goodsName = #{goodsname,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsweight != null" >
+        goodsWeight = #{goodsweight,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsvolume != null" >
+        goodsVolume = #{goodsvolume,jdbcType=VARCHAR},
+      </if>
+      <if test="talkprice != null" >
+        talkPrice = #{talkprice,jdbcType=DOUBLE},
+      </if>
+      <if test="bk1 != null" >
+        bk1 = #{bk1,jdbcType=VARCHAR},
+      </if>
+      <if test="bk2 != null" >
+        bk2 = #{bk2,jdbcType=VARCHAR},
+      </if>
+      <if test="bk3 != null" >
+        bk3 = #{bk3,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsstatus != null" >
+        goodsStatus = #{goodsstatus,jdbcType=INTEGER},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -208,7 +344,16 @@
     set userPointId = #{userpointid,jdbcType=VARCHAR},
       userId = #{userid,jdbcType=INTEGER},
       ownerId = #{ownerid,jdbcType=INTEGER},
-      status = #{status,jdbcType=INTEGER}
+      status = #{status,jdbcType=INTEGER},
+      goodsImage = #{goodsimage,jdbcType=VARCHAR},
+      goodsName = #{goodsname,jdbcType=VARCHAR},
+      goodsWeight = #{goodsweight,jdbcType=VARCHAR},
+      goodsVolume = #{goodsvolume,jdbcType=VARCHAR},
+      talkPrice = #{talkprice,jdbcType=DOUBLE},
+      bk1 = #{bk1,jdbcType=VARCHAR},
+      bk2 = #{bk2,jdbcType=VARCHAR},
+      bk3 = #{bk3,jdbcType=VARCHAR},
+      goodsStatus = #{goodsstatus,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

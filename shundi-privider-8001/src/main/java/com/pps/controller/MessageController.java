@@ -89,7 +89,6 @@ public class MessageController {
                 temporaryStorage.setKey(phone+type);
                 temporaryStorage.setData(yanzhengma);
                 temporaryStorage.setSaveDate(new Date());
-
                 mongoTemplate.save(temporaryStorage);
 
 

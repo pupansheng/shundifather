@@ -18,5 +18,5 @@ public interface UserService {
     public Result updatePassword(TbUser tbUser);
 
 
-
+    Result findUserById(String integer);
 }

@@ -1,21 +1,21 @@
 package com.pps.service.impl;
 
-import com.pps.MyLog;
+import com.pps.mapper.TbOrderMapper;
 import com.pps.mapper.TbUserMapper;
+import com.pps.pojo.TbOrder;
+import com.pps.pojo.TbOrderExample;
 import com.pps.pojo.TbUser;
 import com.pps.pojo.TbUserExample;
+import com.pps.pojo.exception.UnknowException;
 import com.pps.pojo.group.Result;
-import com.pps.pojo.mongo.TemporaryStorage;
+import com.pps.service.UserPointService;
 import com.pps.service.UserService;
 import com.pps.util.MongodbUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -34,7 +34,12 @@ public class UserServiceImp implements UserService {
     @Autowired
     MongoTemplate mongoTemplate;
     @Autowired
-    private MongodbUtil mongodbUtil;
+    UserPointService userPointService;
+    @Autowired
+    TbOrderMapper tbOrderMapper;
+
+
+
 
 
     @Override
@@ -111,6 +116,32 @@ public class UserServiceImp implements UserService {
             return new Result(true,"成功");
         }
         return  new Result(false,"无此用户");
+    }
+
+    @Override
+    public Result findUserById(String integer) {
+
+        TbOrderExample tbOrderExample=new TbOrderExample();
+        TbOrderExample.Criteria criteria = tbOrderExample.createCriteria();
+        criteria.andUserpointidEqualTo(integer);
+        List<TbOrder> tbOrders = tbOrderMapper.selectByExample(tbOrderExample);
+        if(tbOrders.size()<=0){
+         throw new UnknowException("无此信息");
+        }
+
+        TbUser tbUser = tbUserMapper.selectByPrimaryKey(tbOrders.get(0).getUserid());
+        if(tbUser!=null){
+            tbUser.setIdcardimage1(null);
+            tbUser.setIdcardimage2(null);
+            tbUser.setPassword(null);
+            tbUser.setOpenid(null);
+            tbUser.setMoney(null);
+            return new Result(true,tbUser);
+
+        }else{
+            return  new Result(false,"无此用户");
+        }
+
     }
 
 
