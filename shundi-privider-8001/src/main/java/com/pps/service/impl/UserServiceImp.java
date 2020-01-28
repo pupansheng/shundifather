@@ -1,5 +1,6 @@
 package com.pps.service.impl;
 
+import com.pps.config.compont.HuanXinHelper;
 import com.pps.mapper.TbOrderMapper;
 import com.pps.mapper.TbUserMapper;
 import com.pps.pojo.TbOrder;
@@ -10,13 +11,14 @@ import com.pps.pojo.exception.UnknowException;
 import com.pps.pojo.group.Result;
 import com.pps.service.UserPointService;
 import com.pps.service.UserService;
-import com.pps.util.MongodbUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Classname UserServiceImp
@@ -37,6 +39,8 @@ public class UserServiceImp implements UserService {
     UserPointService userPointService;
     @Autowired
     TbOrderMapper tbOrderMapper;
+    @Autowired
+    HuanXinHelper huanXinHelper;
 
 
 
@@ -63,6 +67,15 @@ public class UserServiceImp implements UserService {
             }
 
             tbUserMapper.insertSelective(tbUser);
+            Map map=new HashMap();
+            map.put("username",tbUser.getPhone());
+            map.put("password",tbUser.getPhone());
+            Boolean f=  huanXinHelper.sendPostJson("users", map);
+            if(!f){
+                throw new UnknowException("注册IM失败");
+            }
+
+
             result.setStatus(true);
         }catch (Exception e){
            result.setStatus(false);
@@ -77,6 +90,7 @@ public class UserServiceImp implements UserService {
             tbUserMapper.updateByPrimaryKeySelective(tbUser);
             result.setStatus(true);
         }catch (Exception e){
+            e.printStackTrace();
             result.setStatus(false);
             result.setMessage("更新失败！");
         }
@@ -144,5 +158,13 @@ public class UserServiceImp implements UserService {
 
     }
 
+    @Override
+    public Result findUserByPrimaryId(Integer id) {
 
+
+        TbUser tbUser = tbUserMapper.selectByPrimaryKey(id);
+        tbUser.setPassword(null);
+
+        return new Result(true,tbUser);
+    }
 }

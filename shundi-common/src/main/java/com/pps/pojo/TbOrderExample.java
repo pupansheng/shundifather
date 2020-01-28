@@ -1,6 +1,8 @@
 package com.pps.pojo;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 public class TbOrderExample {
@@ -102,6 +104,32 @@ public class TbOrderExample {
                 throw new RuntimeException("Between values for " + property + " cannot be null");
             }
             criteria.add(new Criterion(condition, value1, value2));
+        }
+
+        protected void addCriterionForJDBCDate(String condition, Date value, String property) {
+            if (value == null) {
+                throw new RuntimeException("Value for " + property + " cannot be null");
+            }
+            addCriterion(condition, new java.sql.Date(value.getTime()), property);
+        }
+
+        protected void addCriterionForJDBCDate(String condition, List<Date> values, String property) {
+            if (values == null || values.size() == 0) {
+                throw new RuntimeException("Value list for " + property + " cannot be null or empty");
+            }
+            List<java.sql.Date> dateList = new ArrayList<java.sql.Date>();
+            Iterator<Date> iter = values.iterator();
+            while (iter.hasNext()) {
+                dateList.add(new java.sql.Date(iter.next().getTime()));
+            }
+            addCriterion(condition, dateList, property);
+        }
+
+        protected void addCriterionForJDBCDate(String condition, Date value1, Date value2, String property) {
+            if (value1 == null || value2 == null) {
+                throw new RuntimeException("Between values for " + property + " cannot be null");
+            }
+            addCriterion(condition, new java.sql.Date(value1.getTime()), new java.sql.Date(value2.getTime()), property);
         }
 
         public Criteria andIdIsNull() {
@@ -1021,6 +1049,246 @@ public class TbOrderExample {
 
         public Criteria andGoodsstatusNotBetween(Integer value1, Integer value2) {
             addCriterion("goodsStatus not between", value1, value2, "goodsstatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeIsNull() {
+            addCriterion("createTime is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeIsNotNull() {
+            addCriterion("createTime is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeEqualTo(Date value) {
+            addCriterionForJDBCDate("createTime =", value, "createtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeNotEqualTo(Date value) {
+            addCriterionForJDBCDate("createTime <>", value, "createtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeGreaterThan(Date value) {
+            addCriterionForJDBCDate("createTime >", value, "createtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeGreaterThanOrEqualTo(Date value) {
+            addCriterionForJDBCDate("createTime >=", value, "createtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeLessThan(Date value) {
+            addCriterionForJDBCDate("createTime <", value, "createtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeLessThanOrEqualTo(Date value) {
+            addCriterionForJDBCDate("createTime <=", value, "createtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeIn(List<Date> values) {
+            addCriterionForJDBCDate("createTime in", values, "createtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeNotIn(List<Date> values) {
+            addCriterionForJDBCDate("createTime not in", values, "createtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeBetween(Date value1, Date value2) {
+            addCriterionForJDBCDate("createTime between", value1, value2, "createtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreatetimeNotBetween(Date value1, Date value2) {
+            addCriterionForJDBCDate("createTime not between", value1, value2, "createtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeIsNull() {
+            addCriterion("completionTime is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeIsNotNull() {
+            addCriterion("completionTime is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeEqualTo(Date value) {
+            addCriterionForJDBCDate("completionTime =", value, "completiontime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeNotEqualTo(Date value) {
+            addCriterionForJDBCDate("completionTime <>", value, "completiontime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeGreaterThan(Date value) {
+            addCriterionForJDBCDate("completionTime >", value, "completiontime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeGreaterThanOrEqualTo(Date value) {
+            addCriterionForJDBCDate("completionTime >=", value, "completiontime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeLessThan(Date value) {
+            addCriterionForJDBCDate("completionTime <", value, "completiontime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeLessThanOrEqualTo(Date value) {
+            addCriterionForJDBCDate("completionTime <=", value, "completiontime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeIn(List<Date> values) {
+            addCriterionForJDBCDate("completionTime in", values, "completiontime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeNotIn(List<Date> values) {
+            addCriterionForJDBCDate("completionTime not in", values, "completiontime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeBetween(Date value1, Date value2) {
+            addCriterionForJDBCDate("completionTime between", value1, value2, "completiontime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCompletiontimeNotBetween(Date value1, Date value2) {
+            addCriterionForJDBCDate("completionTime not between", value1, value2, "completiontime");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeIsNull() {
+            addCriterion("establishedTime is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeIsNotNull() {
+            addCriterion("establishedTime is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeEqualTo(Date value) {
+            addCriterionForJDBCDate("establishedTime =", value, "establishedtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeNotEqualTo(Date value) {
+            addCriterionForJDBCDate("establishedTime <>", value, "establishedtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeGreaterThan(Date value) {
+            addCriterionForJDBCDate("establishedTime >", value, "establishedtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeGreaterThanOrEqualTo(Date value) {
+            addCriterionForJDBCDate("establishedTime >=", value, "establishedtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeLessThan(Date value) {
+            addCriterionForJDBCDate("establishedTime <", value, "establishedtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeLessThanOrEqualTo(Date value) {
+            addCriterionForJDBCDate("establishedTime <=", value, "establishedtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeIn(List<Date> values) {
+            addCriterionForJDBCDate("establishedTime in", values, "establishedtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeNotIn(List<Date> values) {
+            addCriterionForJDBCDate("establishedTime not in", values, "establishedtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeBetween(Date value1, Date value2) {
+            addCriterionForJDBCDate("establishedTime between", value1, value2, "establishedtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andEstablishedtimeNotBetween(Date value1, Date value2) {
+            addCriterionForJDBCDate("establishedTime not between", value1, value2, "establishedtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeIsNull() {
+            addCriterion("arrivalTime is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeIsNotNull() {
+            addCriterion("arrivalTime is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeEqualTo(Date value) {
+            addCriterionForJDBCDate("arrivalTime =", value, "arrivaltime");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeNotEqualTo(Date value) {
+            addCriterionForJDBCDate("arrivalTime <>", value, "arrivaltime");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeGreaterThan(Date value) {
+            addCriterionForJDBCDate("arrivalTime >", value, "arrivaltime");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeGreaterThanOrEqualTo(Date value) {
+            addCriterionForJDBCDate("arrivalTime >=", value, "arrivaltime");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeLessThan(Date value) {
+            addCriterionForJDBCDate("arrivalTime <", value, "arrivaltime");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeLessThanOrEqualTo(Date value) {
+            addCriterionForJDBCDate("arrivalTime <=", value, "arrivaltime");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeIn(List<Date> values) {
+            addCriterionForJDBCDate("arrivalTime in", values, "arrivaltime");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeNotIn(List<Date> values) {
+            addCriterionForJDBCDate("arrivalTime not in", values, "arrivaltime");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeBetween(Date value1, Date value2) {
+            addCriterionForJDBCDate("arrivalTime between", value1, value2, "arrivaltime");
+            return (Criteria) this;
+        }
+
+        public Criteria andArrivaltimeNotBetween(Date value1, Date value2) {
+            addCriterionForJDBCDate("arrivalTime not between", value1, value2, "arrivaltime");
             return (Criteria) this;
         }
     }

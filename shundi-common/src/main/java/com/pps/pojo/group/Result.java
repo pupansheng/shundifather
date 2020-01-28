@@ -17,17 +17,17 @@ public class Result {
 
 
     }
-
-
-
     public Result(boolean status, String message) {
         this.status = status;
-        this.message = message;
     }
-
-
     public Result(boolean status, Object data) {
         this.status = status;
+        this.data = data;
+    }
+
+    public Result(boolean status, String message, Object data) {
+        this.status = status;
+        this.message = message;
         this.data = data;
     }
 

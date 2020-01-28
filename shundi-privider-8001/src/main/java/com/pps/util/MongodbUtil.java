@@ -50,7 +50,7 @@ public class MongodbUtil {
         Query query=new Query();
         Criteria criteria2 = Criteria.where("key").is(key);
         query.addCriteria(criteria2);
-        TemporaryStorage tem = mongoTemplate.findAndRemove(query, TemporaryStorage.class, "shundiStorage");
+        TemporaryStorage tem = mongoTemplate.findOne(query, TemporaryStorage.class, "shundiStorage");
 
 
         return  tem;

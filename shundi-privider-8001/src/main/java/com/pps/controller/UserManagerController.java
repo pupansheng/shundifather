@@ -59,7 +59,7 @@ public class UserManagerController {
         query.addCriteria(criteria);
 
 
-        TemporaryStorage tem = mongoTemplate.findAndRemove(query, TemporaryStorage.class, "shundiStorage");
+        TemporaryStorage tem = mongoTemplate.findOne(query, TemporaryStorage.class, "shundiStorage");
 
 
 
@@ -80,15 +80,12 @@ public class UserManagerController {
                 Date saveDate = tem.getSaveDate();
 
                 long i = date.getTime()-saveDate.getTime();
-                MyLog.logger.info("验证码存在时间："+i);
+                MyLog.logger.info("验证码存在时间："+i/1000+"s");
 
                 if(i>60*1000)
                     return  new Result(false,"验证码过期");
 
             }
-
-
-
         }
         return  userService.register(tbUser);
     }
@@ -119,7 +116,7 @@ public class UserManagerController {
         Query query=new Query();
         Criteria criteria = Criteria.where("key").is(key);
         query.addCriteria(criteria);
-        TemporaryStorage tem = mongoTemplate.findAndRemove(query, TemporaryStorage.class, "shundiStorage");
+        TemporaryStorage tem = mongoTemplate.findOne(query, TemporaryStorage.class, "shundiStorage");
 
         if(tem==null){
 
@@ -183,7 +180,7 @@ public class UserManagerController {
         Query query=new Query();
         Criteria criteria = Criteria.where("key").is(key);
         query.addCriteria(criteria);
-        TemporaryStorage tem = mongoTemplate.findAndRemove(query, TemporaryStorage.class, "shundiStorage");
+        TemporaryStorage tem = mongoTemplate.findOne(query, TemporaryStorage.class, "shundiStorage");
 
         if(tem==null){
 
@@ -198,33 +195,25 @@ public class UserManagerController {
             }
             else {
 
-                Date date=new Date();
+                Date date = new Date();
                 Date saveDate = tem.getSaveDate();
 
-                long i = date.getTime()-saveDate.getTime();
-                MyLog.logger.info("验证码存在时间："+i);
+                long i = date.getTime() - saveDate.getTime();
+                MyLog.logger.info("验证码存在时间：" + i);
 
-                if(i>60*1000)
-                    return  new Result(false,"验证码过期");
+                if (i > 60 * 1000)
+                    return new Result(false, "验证码过期");
             }
-
-
-
         }
-
         MyLog.logger.info("更新用户密码："+tbUser);
-
-
         Result result = userService.updatePassword(tbUser);
-
         return  result;
     }
-    @GetMapping("/getBasicInfo/{id}")
-    public  Result getBASIC(@PathVariable("id") String integer){
+    @ApiOperation("根据主键获得用户基本信息")
+    @GetMapping("/getBasciInfo/{id}")
+    public Result getBASIC(@PathVariable("id") Integer id){
 
-        return  userService.findUserById(integer);
-
+        return  userService.findUserByPrimaryId(id);
     }
-
 
 }

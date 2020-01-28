@@ -16,6 +16,10 @@
     <result column="bk2" property="bk2" jdbcType="VARCHAR" />
     <result column="bk3" property="bk3" jdbcType="VARCHAR" />
     <result column="goodsStatus" property="goodsstatus" jdbcType="INTEGER" />
+    <result column="createTime" property="createtime" jdbcType="DATE" />
+    <result column="completionTime" property="completiontime" jdbcType="DATE" />
+    <result column="establishedTime" property="establishedtime" jdbcType="DATE" />
+    <result column="arrivalTime" property="arrivaltime" jdbcType="DATE" />
   </resultMap>
   <sql id="Example_Where_Clause" >
     <where >
@@ -77,7 +81,8 @@
   </sql>
   <sql id="Base_Column_List" >
     id, userPointId, userId, ownerId, status, goodsImage, goodsName, goodsWeight, goodsVolume, 
-    talkPrice, bk1, bk2, bk3, goodsStatus
+    talkPrice, bk1, bk2, bk3, goodsStatus, createTime, completionTime, establishedTime, 
+    arrivalTime
   </sql>
   <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.pps.pojo.TbOrderExample" >
     select
@@ -117,12 +122,16 @@
       ownerId, status, goodsImage, 
       goodsName, goodsWeight, goodsVolume, 
       talkPrice, bk1, bk2, 
-      bk3, goodsStatus)
+      bk3, goodsStatus, createTime, 
+      completionTime, establishedTime, arrivalTime
+      )
     values (#{id,jdbcType=INTEGER}, #{userpointid,jdbcType=VARCHAR}, #{userid,jdbcType=INTEGER}, 
       #{ownerid,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, #{goodsimage,jdbcType=VARCHAR}, 
       #{goodsname,jdbcType=VARCHAR}, #{goodsweight,jdbcType=VARCHAR}, #{goodsvolume,jdbcType=VARCHAR}, 
       #{talkprice,jdbcType=DOUBLE}, #{bk1,jdbcType=VARCHAR}, #{bk2,jdbcType=VARCHAR}, 
-      #{bk3,jdbcType=VARCHAR}, #{goodsstatus,jdbcType=INTEGER})
+      #{bk3,jdbcType=VARCHAR}, #{goodsstatus,jdbcType=INTEGER}, #{createtime,jdbcType=DATE}, 
+      #{completiontime,jdbcType=DATE}, #{establishedtime,jdbcType=DATE}, #{arrivaltime,jdbcType=DATE}
+      )
   </insert>
   <insert id="insertSelective" parameterType="com.pps.pojo.TbOrder" >
     <selectKey keyColumn="id" resultType="int" keyProperty="id" order="AFTER">
@@ -172,6 +181,18 @@
       <if test="goodsstatus != null" >
         goodsStatus,
       </if>
+      <if test="createtime != null" >
+        createTime,
+      </if>
+      <if test="completiontime != null" >
+        completionTime,
+      </if>
+      <if test="establishedtime != null" >
+        establishedTime,
+      </if>
+      <if test="arrivaltime != null" >
+        arrivalTime,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="id != null" >
@@ -215,6 +236,18 @@
       </if>
       <if test="goodsstatus != null" >
         #{goodsstatus,jdbcType=INTEGER},
+      </if>
+      <if test="createtime != null" >
+        #{createtime,jdbcType=DATE},
+      </if>
+      <if test="completiontime != null" >
+        #{completiontime,jdbcType=DATE},
+      </if>
+      <if test="establishedtime != null" >
+        #{establishedtime,jdbcType=DATE},
+      </if>
+      <if test="arrivaltime != null" >
+        #{arrivaltime,jdbcType=DATE},
       </if>
     </trim>
   </insert>
@@ -269,6 +302,18 @@
       <if test="record.goodsstatus != null" >
         goodsStatus = #{record.goodsstatus,jdbcType=INTEGER},
       </if>
+      <if test="record.createtime != null" >
+        createTime = #{record.createtime,jdbcType=DATE},
+      </if>
+      <if test="record.completiontime != null" >
+        completionTime = #{record.completiontime,jdbcType=DATE},
+      </if>
+      <if test="record.establishedtime != null" >
+        establishedTime = #{record.establishedtime,jdbcType=DATE},
+      </if>
+      <if test="record.arrivaltime != null" >
+        arrivalTime = #{record.arrivaltime,jdbcType=DATE},
+      </if>
     </set>
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
@@ -289,7 +334,11 @@
       bk1 = #{record.bk1,jdbcType=VARCHAR},
       bk2 = #{record.bk2,jdbcType=VARCHAR},
       bk3 = #{record.bk3,jdbcType=VARCHAR},
-      goodsStatus = #{record.goodsstatus,jdbcType=INTEGER}
+      goodsStatus = #{record.goodsstatus,jdbcType=INTEGER},
+      createTime = #{record.createtime,jdbcType=DATE},
+      completionTime = #{record.completiontime,jdbcType=DATE},
+      establishedTime = #{record.establishedtime,jdbcType=DATE},
+      arrivalTime = #{record.arrivaltime,jdbcType=DATE}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -336,6 +385,18 @@
       <if test="goodsstatus != null" >
         goodsStatus = #{goodsstatus,jdbcType=INTEGER},
       </if>
+      <if test="createtime != null" >
+        createTime = #{createtime,jdbcType=DATE},
+      </if>
+      <if test="completiontime != null" >
+        completionTime = #{completiontime,jdbcType=DATE},
+      </if>
+      <if test="establishedtime != null" >
+        establishedTime = #{establishedtime,jdbcType=DATE},
+      </if>
+      <if test="arrivaltime != null" >
+        arrivalTime = #{arrivaltime,jdbcType=DATE},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -353,7 +414,11 @@
       bk1 = #{bk1,jdbcType=VARCHAR},
       bk2 = #{bk2,jdbcType=VARCHAR},
       bk3 = #{bk3,jdbcType=VARCHAR},
-      goodsStatus = #{goodsstatus,jdbcType=INTEGER}
+      goodsStatus = #{goodsstatus,jdbcType=INTEGER},
+      createTime = #{createtime,jdbcType=DATE},
+      completionTime = #{completiontime,jdbcType=DATE},
+      establishedTime = #{establishedtime,jdbcType=DATE},
+      arrivalTime = #{arrivaltime,jdbcType=DATE}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

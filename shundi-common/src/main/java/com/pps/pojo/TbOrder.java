@@ -1,6 +1,10 @@
 package com.pps.pojo;
 
-public class TbOrder {
+import com.pps.pojo.group.PageParam;
+
+import java.util.Date;
+
+public class TbOrder extends PageParam {
     private Integer id;
 
     private String userpointid;
@@ -29,25 +33,13 @@ public class TbOrder {
 
     private Integer goodsstatus;
 
-    private  Integer pageSize;
+    private Date createtime;
 
-    private  Integer pageNum;
+    private Date completiontime;
 
-    public Integer getPageSize() {
-        return pageSize;
-    }
+    private Date establishedtime;
 
-    public void setPageSize(Integer pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    public Integer getPageNum() {
-        return pageNum;
-    }
-
-    public void setPageNum(Integer pageNum) {
-        this.pageNum = pageNum;
-    }
+    private Date arrivaltime;
 
     public Integer getId() {
         return id;
@@ -159,5 +151,37 @@ public class TbOrder {
 
     public void setGoodsstatus(Integer goodsstatus) {
         this.goodsstatus = goodsstatus;
+    }
+
+    public Date getCreatetime() {
+        return createtime;
+    }
+
+    public void setCreatetime(Date createtime) {
+        this.createtime = createtime;
+    }
+
+    public Date getCompletiontime() {
+        return completiontime;
+    }
+
+    public void setCompletiontime(Date completiontime) {
+        this.completiontime = completiontime;
+    }
+
+    public Date getEstablishedtime() {
+        return establishedtime;
+    }
+
+    public void setEstablishedtime(Date establishedtime) {
+        this.establishedtime = establishedtime;
+    }
+
+    public Date getArrivaltime() {
+        return arrivaltime;
+    }
+
+    public void setArrivaltime(Date arrivaltime) {
+        this.arrivaltime = arrivaltime;
     }
 }

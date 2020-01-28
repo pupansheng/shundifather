@@ -1,12 +1,14 @@
 package com.pps.service.impl;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mongodb.WriteResult;
+import com.pps.config.compont.HuanXinHelper;
+import com.pps.config.compont.MailConfig;
 import com.pps.mapper.TbOrderMapper;
 import com.pps.pojo.TbOrder;
 import com.pps.pojo.TbOrderExample;
+import com.pps.pojo.TbUser;
 import com.pps.pojo.exception.UnknowException;
 import com.pps.pojo.group.Result;
 import com.pps.pojo.mongo.UserPoint;
@@ -14,7 +16,9 @@ import com.pps.pojo.status.OrderStatus;
 import com.pps.pojo.status.PackageStatus;
 import com.pps.service.OrderService;
 import com.pps.service.UserPointService;
-import jdk.nashorn.internal.runtime.options.Option;
+import com.pps.service.UserService;
+import com.pps.util.MailSentTherd;
+import org.bouncycastle.crypto.generators.KDF1BytesGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -23,10 +27,9 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import javax.annotation.PostConstruct;
+import javax.swing.*;
+import java.util.*;
 
 /**
  * @Classname OrderServiceImpl
@@ -45,6 +48,23 @@ public class OrderServiceImpl implements OrderService {
     MongoTemplate mongoTemplate;
     @Autowired
     UserPointService userPointService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    MailConfig mailConfig;
+    @Autowired
+    HuanXinHelper huanXinHelper;
+
+
+    @PostConstruct
+    public  void  f(){
+        System.out.println("邮件服务器列表如下：");
+        mailConfig.getClient().forEach(p->{
+            p.forEach((k,v)->{
+                System.out.println(k+":"+v);
+            });
+        });
+    }
 
 
     @Override
@@ -56,7 +76,10 @@ public class OrderServiceImpl implements OrderService {
             throw new UnknowException("该货物此状态不可接单 请刷新页面 信息存在滞后");
         }
 
-        tbOrder.setStatus(OrderStatus.已申请.getCode());
+
+       tbOrder.setStatus(OrderStatus.已申请.getCode());
+
+        tbOrder.setCreatetime(new Date());
         tbOrderMapper.insert(tbOrder);
         Optional.of(tbOrder.getId()).orElseThrow(UnknowException::new);
 
@@ -64,8 +87,49 @@ public class OrderServiceImpl implements OrderService {
         query.addCriteria(Criteria.where("_id").is(userPoint.get_id()));  //_id区分引号 "1"和1
         Update update = Update.update("status", PackageStatus.已申请.getCode());
         mongoTemplate.updateFirst(query,update,"userPoint");
-        return  tbOrder;
 
+        //接单者：
+        TbUser tbUser= (TbUser) userService.findUserByPrimaryId(tbOrder.getUserid()).getData();
+        //货主
+        TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
+
+        //发送邮件提醒
+        if(tbUser1.getBk1()!=null&&!tbUser1.getBk1().equals("")) {
+            String content = "你的货物:" + userPoint.getGoods().getName() + "<p>在：" + new Date() + "时刻<hr>被用户：" + tbUser.getUsername() + "  接单</p><p></p>请前往我的包裹查看";
+            String reciveUser = tbUser1.getBk1();
+            String theme = "顺递APP提醒";
+            String client = "";
+            String password = "";
+            List<Map<String, String>> client1 = mailConfig.getClient();
+            int size = client1.size();
+            if (System.currentTimeMillis() % 2 == 0) {
+
+                client = client1.get(0).get("client");
+                password = client1.get(0).get("password");
+
+            } else if (System.currentTimeMillis() % 3 == 0) {
+
+                client = client1.get(1).get("client");
+                password = client1.get(1).get("password");
+
+            } else if (System.currentTimeMillis() % 5 == 0) {
+
+                client = client1.get(2).get("client");
+                password = client1.get(2).get("password");
+
+            } else {
+
+                client = client1.get(size - 1).get("client");
+                password = client1.get(size - 1).get("password");
+
+            }
+            new MailSentTherd(content, reciveUser, theme, client, password).run();
+
+            //im提醒
+            huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
+        }
+
+        return  tbOrder;
     }
 
     @Override
@@ -84,7 +148,7 @@ public class OrderServiceImpl implements OrderService {
     public Boolean deleteOrder(TbOrder tbOrder) {
 
         int status = tbOrder.getStatus();
-        if(status==OrderStatus.已申请.getCode()||status==OrderStatus.被拒绝.getCode()){
+        if(status==OrderStatus.已申请.getCode()||status==OrderStatus.被拒绝.getCode()||status==OrderStatus.已同意.getCode()){
 
             if(status==OrderStatus.已申请.getCode()){
 
@@ -93,6 +157,46 @@ public class OrderServiceImpl implements OrderService {
                 Update update = Update.update("status", PackageStatus.已提交.getCode());
                 WriteResult userPoint1 = mongoTemplate.updateFirst(query, update, "userPoint");
 
+                UserPoint userPoint=userPointService.getUserPoint(tbOrder.getUserpointid());
+                //接单者：
+                TbUser tbUser= (TbUser) userService.findUserByPrimaryId(tbOrder.getUserid()).getData();
+                //货主
+                TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
+                //发送邮件提醒
+                if(tbUser1.getBk1()!=null&&!tbUser1.getBk1().equals("")) {
+                    String content = "你的货物:" + userPoint.getGoods().getName() + "<p>在：" + new Date() + "时刻</p><hr>被用户：" + tbUser.getUsername() + " 取消接单<p></p>请前往我的包裹查看";
+                    String reciveUser = tbUser1.getBk1();
+                    String theme = "顺递APP提醒";
+                    String client = "";
+                    String password = "";
+                    List<Map<String, String>> client1 = mailConfig.getClient();
+                    int size = client1.size();
+                    if (System.currentTimeMillis() % 2 == 0) {
+
+                        client = client1.get(0).get("client");
+                        password = client1.get(0).get("password");
+
+                    } else if (System.currentTimeMillis() % 3 == 0) {
+
+                        client = client1.get(1).get("client");
+                        password = client1.get(1).get("password");
+
+                    } else if (System.currentTimeMillis() % 5 == 0) {
+
+                        client = client1.get(2).get("client");
+                        password = client1.get(2).get("password");
+
+                    } else {
+
+                        client = client1.get(size - 1).get("client");
+                        password = client1.get(size - 1).get("password");
+
+                    }
+                    new MailSentTherd(content, reciveUser, theme, client, password).run();
+
+                    //im提醒
+                    huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
+                }
 
             }
             int c=  tbOrderMapper.deleteByPrimaryKey(tbOrder.getId());
@@ -165,11 +269,198 @@ public class OrderServiceImpl implements OrderService {
             int count = tbOrderMapper.countByExample(tbOrderExample);
             hashMap.put(code+"",count);
         });
-
         return  new Result(true,hashMap);
+    }
+
+    @Override
+    public Result rejectOrder(TbOrder tbOrder) {
+
+        String userpointid = tbOrder.getUserpointid();
+        UserPoint userPoint = userPointService.getUserPoint(userpointid);
+        int status=userPoint.getStatus();
+        if(status!=PackageStatus.待回复.getCode()){
+            throw new UnknowException("此订单此状态不可进行此操作 请刷新页面");
+        }
+
+        userPointService.updateStatus(userPoint, PackageStatus.被拒绝.getCode());
+        Boolean aBoolean = deleteOrder(tbOrder);
+
+        //接单者：
+        TbUser tbUser= (TbUser) userService.findUserByPrimaryId(tbOrder.getUserid()).getData();
+        //货主
+        TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
+        //发送邮件提醒
+        if(tbUser1.getBk1()!=null&&!tbUser1.getBk1().equals("")) {
+            String content = "你的货物:" + userPoint.getGoods().getName() + "<p>在：" + new Date() + "时刻</p><hr>被用户：" + tbUser.getUsername() + " 拒绝接单<p></p>请前往我的包裹查看";
+            String reciveUser = tbUser1.getBk1();
+            String theme = "顺递APP提醒";
+            String client = "";
+            String password = "";
+            List<Map<String, String>> client1 = mailConfig.getClient();
+            int size = client1.size();
+            if (System.currentTimeMillis() % 2 == 0) {
+
+                client = client1.get(0).get("client");
+                password = client1.get(0).get("password");
+
+            } else if (System.currentTimeMillis() % 3 == 0) {
+
+                client = client1.get(1).get("client");
+                password = client1.get(1).get("password");
+
+            } else if (System.currentTimeMillis() % 5 == 0) {
+
+                client = client1.get(2).get("client");
+                password = client1.get(2).get("password");
+
+            } else {
+
+                client = client1.get(size - 1).get("client");
+                password = client1.get(size - 1).get("password");
+
+            }
+            new MailSentTherd(content, reciveUser, theme, client, password).run();
+
+            //im提醒
+            huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
+
+    }
+
+
+        return  new Result(aBoolean,aBoolean?null:"出错");
+
+    }
+
+    @Override
+    public Result aggreeOrder(TbOrder tbOrder) {
+
+        String userpointid = tbOrder.getUserpointid();
+        UserPoint userPoint = userPointService.getUserPoint(userpointid);
+        int status=userPoint.getStatus();
+        if(status!=PackageStatus.待回复.getCode()){
+            throw new UnknowException("此订单此状态不可进行此操作 请刷新页面");
+        }
+        //得到取货码
+        String substring = UUID.randomUUID().toString().substring(0, 5);
+        TbOrder tbOrder1=new TbOrder();
+        tbOrder1.setId(tbOrder.getId());
+        tbOrder1.setStatus(OrderStatus.进行中.getCode());
+        tbOrder1.setBk1(substring);//bk1 取货码
+        //交易成立时间 双方都同意 才算成立
+
+        tbOrder1.setEstablishedtime(new Date());
+        Optional<Boolean> aBoolean = updateOrder(tbOrder1);
+        //更新寄件信息
+        userPointService.updateStatus(userPoint,PackageStatus.进行中.getCode());
+
+        //接单者：
+        TbUser tbUser= (TbUser) userService.findUserByPrimaryId(tbOrder.getUserid()).getData();
+        //货主
+        TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
+        //发送邮件提醒
+        if(tbUser1.getBk1()!=null&&!tbUser1.getBk1().equals("")) {
+            String content = "您的货物:" + userPoint.getGoods().getName() + "在：" + new Date() + "时刻<br><hr>被用户：" + tbUser.getUsername() + " 确认接单<p></p>请前往我的包裹查看取货码，等待上门";
+            String reciveUser = tbUser1.getBk1();
+            String theme = "顺递APP提醒";
+            String client = "";
+            String password = "";
+            List<Map<String, String>> client1 = mailConfig.getClient();
+            int size = client1.size();
+            if (System.currentTimeMillis() % 2 == 0) {
+
+                client = client1.get(0).get("client");
+                password = client1.get(0).get("password");
+
+            } else if (System.currentTimeMillis() % 3 == 0) {
+
+                client = client1.get(1).get("client");
+                password = client1.get(1).get("password");
+
+            } else if (System.currentTimeMillis() % 5 == 0) {
+
+                client = client1.get(2).get("client");
+                password = client1.get(2).get("password");
+
+            } else {
+
+                client = client1.get(size - 1).get("client");
+                password = client1.get(size - 1).get("password");
+
+            }
+            new MailSentTherd(content, reciveUser, theme, client, password).run();
+            //im提醒
+            huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
+        }
 
 
 
 
+
+        return new Result(true,"",substring);
+    }
+
+    @Override
+    public Result queryOne(Integer id) {
+
+        return new Result(true,tbOrderMapper.selectByPrimaryKey(id));
+    }
+
+    @Override
+    public Result daohuo(TbOrder tbOrder) {
+
+        TbOrder tbOrder1=new TbOrder();
+        tbOrder1.setId(tbOrder.getId());
+        tbOrder1.setStatus(OrderStatus.待支付.getCode());
+        tbOrder1.setArrivaltime(new Date());
+        int i = tbOrderMapper.updateByPrimaryKeySelective(tbOrder1);
+        if(i!=1){
+            throw new UnknowException("确认失败！");
+        }
+        UserPoint userPoint=userPointService.getUserPoint(tbOrder.getUserpointid());
+        //接单者：
+        TbUser tbUser= (TbUser) userService.findUserByPrimaryId(tbOrder.getUserid()).getData();
+        //货主
+        TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
+        //发送邮件提醒
+        if(tbUser1.getBk1()!=null&&!tbUser1.getBk1().equals("")) {
+            String content = "你的货物:" + userPoint.getGoods().getName() + "在：" + new Date() + "时刻<br><hr>被用户：" + tbUser.getUsername() + " 确认到货<p></p>请前往我的包裹查看";
+            String reciveUser = tbUser1.getBk1();
+            String theme = "顺递APP提醒";
+            String client = "";
+            String password = "";
+            List<Map<String, String>> client1 = mailConfig.getClient();
+            int size = client1.size();
+            if (System.currentTimeMillis() % 2 == 0) {
+
+                client = client1.get(0).get("client");
+                password = client1.get(0).get("password");
+
+            } else if (System.currentTimeMillis() % 3 == 0) {
+
+                client = client1.get(1).get("client");
+                password = client1.get(1).get("password");
+
+            } else if (System.currentTimeMillis() % 5 == 0) {
+
+                client = client1.get(2).get("client");
+                password = client1.get(2).get("password");
+
+            } else {
+
+                client = client1.get(size - 1).get("client");
+                password = client1.get(size - 1).get("password");
+
+            }
+            new MailSentTherd(content, reciveUser, theme, client, password).run();
+
+            //im提醒
+            huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
+        }
+
+
+      /*  UserPoint userPoint=new UserPoint();
+        userPoint.set_id(tbOrder.getUserpointid());
+        userPointService.setStatus(userPoint,PackageStatus.getCode());*/
+        return new Result(true,null);
     }
 }

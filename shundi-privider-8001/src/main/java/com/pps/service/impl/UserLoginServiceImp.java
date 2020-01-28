@@ -93,7 +93,7 @@ public class UserLoginServiceImp implements UserLoginService {
         }
 
 
-        MyLog.logger.info("客户端验证码"+yan);
+        MyLog.logger.info("短信验证码验证码："+yan);
         if(yanzhengma.equals(yan)){
             TbUserExample ex=new TbUserExample();
             TbUserExample.Criteria criteria = ex.createCriteria();
@@ -125,7 +125,12 @@ public class UserLoginServiceImp implements UserLoginService {
     public Result loginOut(String token) {
 
 
-        TemporaryStorage tem=mongodbUtil.getDataByKey(token);
+        MyLog.logger.info("退出登录：KEY="+token);
+        Query query=new Query();
+        Criteria criteria2 = Criteria.where("key").is(token);
+        query.addCriteria(criteria2);
+        TemporaryStorage tem = mongoTemplate.findAndRemove(query, TemporaryStorage.class, "shundiStorage");
+
         if(tem==null){
             return  new Result(false,"无此用户");
         } else

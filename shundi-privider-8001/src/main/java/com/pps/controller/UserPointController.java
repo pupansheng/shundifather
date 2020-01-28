@@ -7,6 +7,7 @@ import com.pps.pojo.mongo.UserPoint;
 import com.pps.pojo.status.OrderStatus;
 import com.pps.pojo.status.PackageStatus;
 import com.pps.service.UserPointService;
+import com.pps.service.UserService;
 import com.pps.util.IdWorker;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -36,7 +37,8 @@ public class UserPointController {
 
     @Autowired
     private UserPointService userPointService;
-
+     @Autowired
+     private UserService userService;
 
     //保存乘客坐标地点
     @ApiOperation(value = "保存客户坐标信息", notes = "")
@@ -154,37 +156,67 @@ public class UserPointController {
     }
 
 
-    @ApiOperation(value = "用户取消已提交物品展示", notes = "")
+    @ApiOperation(value = "货主用户取消已提交物品展示", notes = "")
     @PostMapping("/userPoint/updateStatus/cancel")
     public  Result updateStatus1(@RequestBody UserPoint userPoint){
 
-
         return  userPointService.updateStatus(userPoint, PackageStatus.无效.getCode());
+    }
+
+
+    @ApiOperation(value = "货主用户重新申请待申请状态", notes = "")
+    @PostMapping("/userPoint/updateStatus/reset")
+    public  Result updateStatus4(@RequestBody UserPoint userPoint){
+
+
+        return  userPointService.setStatus(userPoint,PackageStatus.已提交.getCode());
 
     }
-    @ApiOperation(value = "用户同意接单", notes = "")
+
+    @ApiOperation(value = "货主用户同意接单", notes = "")
     @PostMapping("/userPoint/updateStatus/agree")
     public  Result updateStatus2(@RequestBody UserPoint userPoint){
 
         return  userPointService.agreeOrReject(userPoint, OrderStatus.已同意.getCode());
 
     }
-    @ApiOperation(value = "用户拒绝接单", notes = "")
+
+    @ApiOperation(value = "货主用户拒绝接单", notes = "")
     @PostMapping("/userPoint/updateStatus/reject")
     public  Result updateStatus3(@RequestBody UserPoint userPoint){
-
 
         return  userPointService.agreeOrReject(userPoint,OrderStatus.被拒绝.getCode());
 
     }
 
-
-
-    @GetMapping("/query/getPackageNum")
+    @ApiOperation(value = "获得不同状态的寄件信息")
+    @GetMapping("/userPoint/query/getPackageNum")
     public  Result getNUm(Integer userId){
 
         return  userPointService.getPackageNum(userId);
 
+    }
+
+    @ApiOperation(value = "根据订单id 获得接单用户基本信息", notes = "")
+    @GetMapping("/userPoint/getBasicInfo/{id}")
+    public  Result getBASIC(@PathVariable("id") String integer){
+
+        return  userService.findUserById(integer);
+
+    }
+
+    @ApiOperation(value = "获得该寄件的取货码")
+    @PostMapping("/userPoint/getCode")
+    public  Result getCode(@RequestBody UserPoint userPoint){
+
+        return   userPointService.getCode(userPoint);
+    }
+
+    @ApiOperation("确认到货")
+    @PostMapping("/userPoint/querenshouhuo")
+    public  Result querendaohuo(@RequestBody UserPoint userPoint){
+
+      return  userPointService.querenDaohuo(userPoint);
     }
 
 }
