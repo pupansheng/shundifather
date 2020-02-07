@@ -87,7 +87,7 @@
 
     </dependencies>
 
-    <build>
+    <!--<build>
 
         <finalName>suanjiaotongFather</finalName>
 
@@ -115,8 +115,9 @@
                 </configuration>
             </plugin>
 
+
         </plugins>
-    </build>
+    </build>-->
 
 
 

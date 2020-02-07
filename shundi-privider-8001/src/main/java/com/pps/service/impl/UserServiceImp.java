@@ -11,11 +11,15 @@ import com.pps.pojo.exception.UnknowException;
 import com.pps.pojo.group.Result;
 import com.pps.service.UserPointService;
 import com.pps.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,13 +70,21 @@ public class UserServiceImp implements UserService {
                 return new Result(false,"用户名已被注册！");
             }
 
+
+            String password = tbUser.getPassword();
+            MessageDigest sha = MessageDigest.getInstance("MD5");
+            sha.update(password.getBytes());
+            String s = new BigInteger(sha.digest()).toString(32);
+            tbUser.setPassword(s);
+
+
             tbUserMapper.insertSelective(tbUser);
             Map map=new HashMap();
             map.put("username",tbUser.getPhone());
             map.put("password",tbUser.getPhone());
             Boolean f=  huanXinHelper.sendPostJson("users", map);
             if(!f){
-                throw new UnknowException("注册IM失败");
+                throw new UnknowException("注册IM失败:im数量超限或者已有该手机号用户");
             }
 
 
@@ -88,7 +100,14 @@ public class UserServiceImp implements UserService {
         Result result=new Result();
         try{
             tbUserMapper.updateByPrimaryKeySelective(tbUser);
+            if(StringUtils.isNotBlank(tbUser.getPhone())){
+
+                String content="您的个人资料已经更改";
+                huanXinHelper.sendTextMessagetoUser(new String[]{tbUser.getPhone()},content);
+
+            }
             result.setStatus(true);
+
         }catch (Exception e){
             e.printStackTrace();
             result.setStatus(false);
@@ -114,7 +133,7 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public Result updatePassword(TbUser tbUser) {
+    public Result updatePassword(TbUser tbUser) throws NoSuchAlgorithmException {
 
         String phone = tbUser.getPhone();
         TbUserExample tbUserExample=new TbUserExample();
@@ -124,9 +143,15 @@ public class UserServiceImp implements UserService {
         if(tbUsers!=null&&tbUsers.size()>0){
 
             TbUser tbUser1 = tbUsers.get(0);
-            tbUser1.setPassword(tbUser.getPassword());
-            tbUserMapper.updateByPrimaryKeySelective(tbUser1);
+            String password = tbUser.getPassword();
+            MessageDigest sha = MessageDigest.getInstance("MD5");
+            sha.update(password.getBytes());
+            String s = new BigInteger(sha.digest()).toString(32);
 
+            tbUser1.setPassword(s);
+            tbUserMapper.updateByPrimaryKeySelective(tbUser1);
+            String content="您的登陆密码已经更改，请谨慎保管";
+            huanXinHelper.sendTextMessagetoUser(new String[]{tbUser.getPhone()},content);
             return new Result(true,"成功");
         }
         return  new Result(false,"无此用户");
@@ -163,7 +188,10 @@ public class UserServiceImp implements UserService {
 
 
         TbUser tbUser = tbUserMapper.selectByPrimaryKey(id);
+
         tbUser.setPassword(null);
+        //tbUser.setOpenid(null);
+
 
         return new Result(true,tbUser);
     }

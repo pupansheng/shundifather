@@ -3,6 +3,7 @@ package com.pps.config;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,8 @@ public class WebConfig extends WebMvcConfigurerAdapter {
      * 设置响应的字符编码
      * @return
      */
+    @Value("${imagePath}")
+    String imagePath;
     @Bean
     FastJsonHttpMessageConverter fastJsonHttpMessageConverter(){
         FastJsonHttpMessageConverter fastJsonHttpMessageConverter =new FastJsonHttpMessageConverter();
@@ -49,7 +52,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         factory.setMaxFileSize("10MB"); // KB,MB
         /// 总上传数据大小
         factory.setMaxRequestSize("100MB");
-        factory.setLocation("c://uploadtest");
+        factory.setLocation(imagePath);
         return factory.createMultipartConfig();
     }
 

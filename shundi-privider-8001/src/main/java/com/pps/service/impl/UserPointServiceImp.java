@@ -200,85 +200,63 @@ public class UserPointServiceImp implements UserPointService {
                 //货主
                 TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
                 //发送邮件提醒
+                String content = "你申请的货物:[" + userPoint.getGoods().getName() + "]在：" + new Date() + "<hr>被用户：[" + tbUser1.getUsername() + "]---<同意>\n请前往我的接单查看";
+
                 if(tbUser.getBk1()!=null&&!tbUser.getBk1().equals("")) {
-                    String content = "你申请的货物:" + userPoint.getGoods().getName() + "在：" + new Date() + "时刻<br><hr>被用户：" + tbUser1.getUsername() + " 同意<p></p>请前往我的接单查看";
                     String reciveUser = tbUser.getBk1();
                     String theme = "顺递APP提醒";
                     String client = "";
                     String password = "";
                     List<Map<String, String>> client1 = mailConfig.getClient();
-                    int size = client1.size();
-                    if (System.currentTimeMillis() % 2 == 0) {
+                    Optional<Map<String, String>> any = client1.stream().findAny();
+                    client = any.get().get("client");
+                    password = any.get().get("password");
 
-                        client = client1.get(0).get("client");
-                        password = client1.get(0).get("password");
-
-                    } else if (System.currentTimeMillis() % 3 == 0) {
-
-                        client = client1.get(1).get("client");
-                        password = client1.get(1).get("password");
-
-                    } else if (System.currentTimeMillis() % 5 == 0) {
-
-                        client = client1.get(2).get("client");
-                        password = client1.get(2).get("password");
-
-                    } else {
-
-                        client = client1.get(size - 1).get("client");
-                        password = client1.get(size - 1).get("password");
-
+                    try {
+                        new MailSentTherd(content, reciveUser, theme, client, password).run();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    new MailSentTherd(content, reciveUser, theme, client, password).run();
                     //im提醒
-                    huanXinHelper.sendTextMessagetoUser(new String[]{tbUser.getPhone()},content);
 
 
 
                 }
 
-
+                huanXinHelper.sendTextMessagetoUser(new String[]{tbUser.getPhone()},content);
 
             }else{
+
                 updateStatus(userPoint,PackageStatus.已提交.getCode());
                 //接单者：
                 TbUser tbUser= (TbUser) userService.findUserByPrimaryId(tbOrder.getUserid()).getData();
                 //货主
                 TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
                 //发送邮件提醒
+                String content = "你申请的货物:[" + userPoint.getGoods().getName() + "]在：" + new Date() + "\n>被用户：[" + tbUser1.getUsername() + "]---拒绝\n请前往我的接单查看";
+
                 if(tbUser.getBk1()!=null&&!tbUser.getBk1().equals("")) {
-                    String content = "你申请的货物:" + userPoint.getGoods().getName() + "在：" + new Date() + "时刻<br><hr>被用户：" + tbUser1.getUsername() + " 拒绝<p></p>请前往我的接单查看";
                     String reciveUser = tbUser.getBk1();
                     String theme = "顺递APP提醒";
                     String client = "";
                     String password = "";
                     List<Map<String, String>> client1 = mailConfig.getClient();
-                    int size = client1.size();
-                    if (System.currentTimeMillis() % 2 == 0) {
+                    Optional<Map<String, String>> any = client1.stream().findAny();
+                    client = any.get().get("client");
+                    password = any.get().get("password");
 
-                        client = client1.get(0).get("client");
-                        password = client1.get(0).get("password");
-
-                    } else if (System.currentTimeMillis() % 3 == 0) {
-
-                        client = client1.get(1).get("client");
-                        password = client1.get(1).get("password");
-
-                    } else if (System.currentTimeMillis() % 5 == 0) {
-
-                        client = client1.get(2).get("client");
-                        password = client1.get(2).get("password");
-
-                    } else {
-
-                        client = client1.get(size - 1).get("client");
-                        password = client1.get(size - 1).get("password");
-
+                    try {
+                        new MailSentTherd(content, reciveUser, theme, client, password).run();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    new MailSentTherd(content, reciveUser, theme, client, password).run();
+
                     //im提醒
-                    huanXinHelper.sendTextMessagetoUser(new String[]{tbUser.getPhone()},content);
+
                 }
+
+                huanXinHelper.sendTextMessagetoUser(new String[]{tbUser.getPhone()},content);
+
             }
 
         }

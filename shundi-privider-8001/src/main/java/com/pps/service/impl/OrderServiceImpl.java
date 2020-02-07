@@ -30,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import javax.swing.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @Classname OrderServiceImpl
@@ -92,42 +94,32 @@ public class OrderServiceImpl implements OrderService {
         TbUser tbUser= (TbUser) userService.findUserByPrimaryId(tbOrder.getUserid()).getData();
         //货主
         TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
+        String content = "你的货物:[" + userPoint.getGoods().getName() + "]\n在：" + new Date() + "<hr>被用户：[" + tbUser.getUsername() + "]---<接单>\n请前往我的包裹查看";
 
         //发送邮件提醒
         if(tbUser1.getBk1()!=null&&!tbUser1.getBk1().equals("")) {
-            String content = "你的货物:" + userPoint.getGoods().getName() + "<p>在：" + new Date() + "时刻<hr>被用户：" + tbUser.getUsername() + "  接单</p><p></p>请前往我的包裹查看";
-            String reciveUser = tbUser1.getBk1();
-            String theme = "顺递APP提醒";
-            String client = "";
-            String password = "";
-            List<Map<String, String>> client1 = mailConfig.getClient();
-            int size = client1.size();
-            if (System.currentTimeMillis() % 2 == 0) {
 
-                client = client1.get(0).get("client");
-                password = client1.get(0).get("password");
+            if(isEmail(tbUser1.getBk1())) {
 
-            } else if (System.currentTimeMillis() % 3 == 0) {
-
-                client = client1.get(1).get("client");
-                password = client1.get(1).get("password");
-
-            } else if (System.currentTimeMillis() % 5 == 0) {
-
-                client = client1.get(2).get("client");
-                password = client1.get(2).get("password");
-
-            } else {
-
-                client = client1.get(size - 1).get("client");
-                password = client1.get(size - 1).get("password");
-
+                String reciveUser = tbUser1.getBk1();
+                String theme = "顺递APP提醒";
+                String client = "";
+                String password = "";
+                List<Map<String, String>> client1 = mailConfig.getClient();
+                Optional<Map<String, String>> any = client1.stream().findAny();
+                client = any.get().get("client");
+                password = any.get().get("password");
+                try {
+                    new MailSentTherd(content, reciveUser, theme, client, password).run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            new MailSentTherd(content, reciveUser, theme, client, password).run();
 
             //im提醒
-            huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
+
         }
+        huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
 
         return  tbOrder;
     }
@@ -147,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Boolean deleteOrder(TbOrder tbOrder) {
 
-        int status = tbOrder.getStatus();
+        int status = userPointService.getUserPoint(tbOrder.getUserpointid()).getStatus();
         if(status==OrderStatus.已申请.getCode()||status==OrderStatus.被拒绝.getCode()||status==OrderStatus.已同意.getCode()){
 
             if(status==OrderStatus.已申请.getCode()){
@@ -163,40 +155,29 @@ public class OrderServiceImpl implements OrderService {
                 //货主
                 TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
                 //发送邮件提醒
+                String content = "你的货物:[" + userPoint.getGoods().getName() + "]\n在：" + new Date() + "<hr>被用户：[" + tbUser.getUsername() + "]---<取消接单>\n请前往我的包裹查看";
+
                 if(tbUser1.getBk1()!=null&&!tbUser1.getBk1().equals("")) {
-                    String content = "你的货物:" + userPoint.getGoods().getName() + "<p>在：" + new Date() + "时刻</p><hr>被用户：" + tbUser.getUsername() + " 取消接单<p></p>请前往我的包裹查看";
-                    String reciveUser = tbUser1.getBk1();
-                    String theme = "顺递APP提醒";
-                    String client = "";
-                    String password = "";
-                    List<Map<String, String>> client1 = mailConfig.getClient();
-                    int size = client1.size();
-                    if (System.currentTimeMillis() % 2 == 0) {
+                    if(isEmail(tbUser1.getBk1())) {
 
-                        client = client1.get(0).get("client");
-                        password = client1.get(0).get("password");
-
-                    } else if (System.currentTimeMillis() % 3 == 0) {
-
-                        client = client1.get(1).get("client");
-                        password = client1.get(1).get("password");
-
-                    } else if (System.currentTimeMillis() % 5 == 0) {
-
-                        client = client1.get(2).get("client");
-                        password = client1.get(2).get("password");
-
-                    } else {
-
-                        client = client1.get(size - 1).get("client");
-                        password = client1.get(size - 1).get("password");
-
+                        String reciveUser = tbUser1.getBk1();
+                        String theme = "顺递APP提醒";
+                        String client = "";
+                        String password = "";
+                        List<Map<String, String>> client1 = mailConfig.getClient();
+                        Optional<Map<String, String>> any = client1.stream().findAny();
+                        client = any.get().get("client");
+                        password = any.get().get("password");
+                        try {
+                            new MailSentTherd(content, reciveUser, theme, client, password).run();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                    new MailSentTherd(content, reciveUser, theme, client, password).run();
 
-                    //im提醒
-                    huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
                 }
+                //im提醒
+                huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
 
             }
             int c=  tbOrderMapper.deleteByPrimaryKey(tbOrder.getId());
@@ -290,41 +271,31 @@ public class OrderServiceImpl implements OrderService {
         //货主
         TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
         //发送邮件提醒
+        String content = "你的货物:[" + userPoint.getGoods().getName() + "]\n在：" + new Date() + "<hr>被用户：[" + tbUser.getUsername() + "]---<拒绝接单>\n请前往我的包裹查看";
+
         if(tbUser1.getBk1()!=null&&!tbUser1.getBk1().equals("")) {
-            String content = "你的货物:" + userPoint.getGoods().getName() + "<p>在：" + new Date() + "时刻</p><hr>被用户：" + tbUser.getUsername() + " 拒绝接单<p></p>请前往我的包裹查看";
-            String reciveUser = tbUser1.getBk1();
-            String theme = "顺递APP提醒";
-            String client = "";
-            String password = "";
-            List<Map<String, String>> client1 = mailConfig.getClient();
-            int size = client1.size();
-            if (System.currentTimeMillis() % 2 == 0) {
 
-                client = client1.get(0).get("client");
-                password = client1.get(0).get("password");
+            if(isEmail(tbUser1.getBk1())) {
 
-            } else if (System.currentTimeMillis() % 3 == 0) {
-
-                client = client1.get(1).get("client");
-                password = client1.get(1).get("password");
-
-            } else if (System.currentTimeMillis() % 5 == 0) {
-
-                client = client1.get(2).get("client");
-                password = client1.get(2).get("password");
-
-            } else {
-
-                client = client1.get(size - 1).get("client");
-                password = client1.get(size - 1).get("password");
-
+                String reciveUser = tbUser1.getBk1();
+                String theme = "顺递APP提醒";
+                String client = "";
+                String password = "";
+                List<Map<String, String>> client1 = mailConfig.getClient();
+                Optional<Map<String, String>> any = client1.stream().findAny();
+                client = any.get().get("client");
+                password = any.get().get("password");
+                try {
+                    new MailSentTherd(content, reciveUser, theme, client, password).run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            new MailSentTherd(content, reciveUser, theme, client, password).run();
-
             //im提醒
-            huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
 
     }
+
+        huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
 
 
         return  new Result(aBoolean,aBoolean?null:"出错");
@@ -358,40 +329,31 @@ public class OrderServiceImpl implements OrderService {
         //货主
         TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
         //发送邮件提醒
-        if(tbUser1.getBk1()!=null&&!tbUser1.getBk1().equals("")) {
-            String content = "您的货物:" + userPoint.getGoods().getName() + "在：" + new Date() + "时刻<br><hr>被用户：" + tbUser.getUsername() + " 确认接单<p></p>请前往我的包裹查看取货码，等待上门";
-            String reciveUser = tbUser1.getBk1();
-            String theme = "顺递APP提醒";
-            String client = "";
-            String password = "";
-            List<Map<String, String>> client1 = mailConfig.getClient();
-            int size = client1.size();
-            if (System.currentTimeMillis() % 2 == 0) {
+        String content = "您的货物:[" + userPoint.getGoods().getName() + "]\n在：" + new Date() + "<hr>被用户：[" + tbUser.getUsername() + "]---<确认接单>\n请前往我的包裹查看取货码，等待上门";
+        String bk1 = tbUser1.getBk1();
+        if(bk1 !=null&&!bk1.equals("")) {
 
-                client = client1.get(0).get("client");
-                password = client1.get(0).get("password");
 
-            } else if (System.currentTimeMillis() % 3 == 0) {
+            if(isEmail(tbUser1.getBk1())) {
 
-                client = client1.get(1).get("client");
-                password = client1.get(1).get("password");
-
-            } else if (System.currentTimeMillis() % 5 == 0) {
-
-                client = client1.get(2).get("client");
-                password = client1.get(2).get("password");
-
-            } else {
-
-                client = client1.get(size - 1).get("client");
-                password = client1.get(size - 1).get("password");
-
+                String reciveUser = tbUser1.getBk1();
+                String theme = "顺递APP提醒";
+                String client = "";
+                String password = "";
+                List<Map<String, String>> client1 = mailConfig.getClient();
+                Optional<Map<String, String>> any = client1.stream().findAny();
+                client = any.get().get("client");
+                password = any.get().get("password");
+                try {
+                    new MailSentTherd(content, reciveUser, theme, client, password).run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            new MailSentTherd(content, reciveUser, theme, client, password).run();
-            //im提醒
-            huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
+
         }
 
+        huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
 
 
 
@@ -422,45 +384,48 @@ public class OrderServiceImpl implements OrderService {
         //货主
         TbUser tbUser1= (TbUser) userService.findUserByPrimaryId(tbOrder.getOwnerid()).getData();
         //发送邮件提醒
+        String content = "你的货物:[" + userPoint.getGoods().getName() + "]\n在：" + new Date() + "时刻<br><hr>被用户：[" + tbUser.getUsername() + "]---<确认到货>\n请前往我的包裹查看";
         if(tbUser1.getBk1()!=null&&!tbUser1.getBk1().equals("")) {
-            String content = "你的货物:" + userPoint.getGoods().getName() + "在：" + new Date() + "时刻<br><hr>被用户：" + tbUser.getUsername() + " 确认到货<p></p>请前往我的包裹查看";
-            String reciveUser = tbUser1.getBk1();
-            String theme = "顺递APP提醒";
-            String client = "";
-            String password = "";
-            List<Map<String, String>> client1 = mailConfig.getClient();
-            int size = client1.size();
-            if (System.currentTimeMillis() % 2 == 0) {
 
-                client = client1.get(0).get("client");
-                password = client1.get(0).get("password");
+            if(isEmail(tbUser1.getBk1())) {
 
-            } else if (System.currentTimeMillis() % 3 == 0) {
-
-                client = client1.get(1).get("client");
-                password = client1.get(1).get("password");
-
-            } else if (System.currentTimeMillis() % 5 == 0) {
-
-                client = client1.get(2).get("client");
-                password = client1.get(2).get("password");
-
-            } else {
-
-                client = client1.get(size - 1).get("client");
-                password = client1.get(size - 1).get("password");
-
+                String reciveUser = tbUser1.getBk1();
+                String theme = "顺递APP提醒";
+                String client = "";
+                String password = "";
+                List<Map<String, String>> client1 = mailConfig.getClient();
+                Optional<Map<String, String>> any = client1.stream().findAny();
+                client = any.get().get("client");
+                password = any.get().get("password");
+                try {
+                    new MailSentTherd(content, reciveUser, theme, client, password).run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            new MailSentTherd(content, reciveUser, theme, client, password).run();
-
             //im提醒
-            huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
+
         }
 
+        huanXinHelper.sendTextMessagetoUser(new String[]{tbUser1.getPhone()},content);
 
       /*  UserPoint userPoint=new UserPoint();
         userPoint.set_id(tbOrder.getUserpointid());
         userPointService.setStatus(userPoint,PackageStatus.getCode());*/
         return new Result(true,null);
+    }
+
+    public  boolean isEmail(String email) {
+        if (email == null)
+            return false;
+        String rule = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
+        Pattern pattern;
+        Matcher matcher;
+        pattern = Pattern.compile(rule);
+        matcher = pattern.matcher(email);
+        if (matcher.matches())
+            return true;
+        else
+            return false;
     }
 }

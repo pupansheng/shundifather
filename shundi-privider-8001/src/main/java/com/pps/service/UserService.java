@@ -3,6 +3,8 @@ package com.pps.service;
 import com.pps.pojo.TbUser;
 import com.pps.pojo.group.Result;
 
+import java.security.NoSuchAlgorithmException;
+
 /**
  * @Classname UserService
  * @Description 用户信息相关接口
@@ -45,7 +47,7 @@ public interface UserService {
      * @return
      **/
 
-    Result updatePassword(TbUser tbUser);
+    Result updatePassword(TbUser tbUser) throws NoSuchAlgorithmException;
 
     /*
      * @Author Pupansheng

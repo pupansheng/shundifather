@@ -24,7 +24,7 @@ public class MyExceptionHandler {
     public Map<String,Object> handleException(NoAuthorizationException e){
         Map<String,Object> map = new HashMap<>();
         map.put("code","1000");
-        map.put("message","权限不足");
+        map.put("message","登陆过期");
         return map;
     }
     @ResponseBody

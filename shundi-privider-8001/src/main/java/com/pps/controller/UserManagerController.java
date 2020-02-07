@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
 /**
@@ -49,44 +50,32 @@ public class UserManagerController {
 
         //String yanzhengma2=(String)request.getSession().getAttribute("registeryanzhengma");
 
-        System.out.println("-----------------------"+tbUser);
+        MyLog.logger.info("-----------------------"+tbUser);
         String yanzhengma2="";
-
         String key=tbUser.getPhone()+"register";
         MyLog.logger.info("KEY="+key);
         Query query=new Query();
         Criteria criteria = Criteria.where("key").is(key);
         query.addCriteria(criteria);
-
-
         TemporaryStorage tem = mongoTemplate.findOne(query, TemporaryStorage.class, "shundiStorage");
-
-
-
         if(tem==null){
-
             return  new Result(false,"请发送验证码");
-        }
-        else{
-
+        } else{
             yanzhengma2= (String) tem.getData();
-
             if(yanzhengma2==null||yanzhengma2.equals("")||!yanzhengma2.equals(yanzhengma)){
                 return  new Result(false,"验证码错误");
-            }
-            else {
-
+            } else {
                 Date date=new Date();
                 Date saveDate = tem.getSaveDate();
-
                 long i = date.getTime()-saveDate.getTime();
                 MyLog.logger.info("验证码存在时间："+i/1000+"s");
-
-                if(i>60*1000)
-                    return  new Result(false,"验证码过期");
-
+                if(i>60*1000) {
+                    return new Result(false, "验证码过期");
+                }
             }
         }
+
+        mongoTemplate.remove(query,"shundiStorage");
         return  userService.register(tbUser);
     }
 
@@ -107,9 +96,6 @@ public class UserManagerController {
     })
     @RequestMapping(value ="/update/{phone}/{yanzhengma}",method = RequestMethod.POST)
     public Result updateUser2(@RequestBody TbUser tbUser, @PathVariable String yanzhengma, @PathVariable String phone){
-
-        // String yan=(String)request.getSession().getAttribute("updateyanzhengma");
-
         String yan="";
         String key=phone+"update";
         MyLog.logger.info("KEY="+key);
@@ -117,37 +103,26 @@ public class UserManagerController {
         Criteria criteria = Criteria.where("key").is(key);
         query.addCriteria(criteria);
         TemporaryStorage tem = mongoTemplate.findOne(query, TemporaryStorage.class, "shundiStorage");
-
         if(tem==null){
-
             return  new Result(false,"请发送验证码");
-        }
-        else{
-
+        } else{
             yan= (String) tem.getData();
-
             if(yan==null||yan.equals("")||!yan.equals(yanzhengma)){
                 return  new Result(false,"验证码错误");
-            }
-            else {
-
+            } else {
                 Date date=new Date();
                 Date saveDate = tem.getSaveDate();
-
                 long i = date.getTime()-saveDate.getTime();
                 MyLog.logger.info("验证码存在时间："+i);
-
-                if(i>60*1000)
-                    return  new Result(false,"验证码过期");
+                if(i>60*1000) {
+                    return new Result(false, "验证码过期");
+                }
             }
-
-
-
         }
 
+        mongoTemplate.remove(query,"shundiStorage");
         MyLog.logger.info("更新用户信息："+tbUser);
         return  userService.update(tbUser);
-
     }
 
     @ApiOperation(value = "用户更新头像", notes = "")
@@ -157,9 +132,7 @@ public class UserManagerController {
     @RequestMapping("/update/headimage")
     public Result updateHeadImage(@RequestBody TbUser tbUser){
 
-
         Result result = userService.updateImage(tbUser);
-
         return  result;
     }
 
@@ -171,9 +144,7 @@ public class UserManagerController {
 
     })
     @RequestMapping(value ="/update/resetpassword/{phone}/{yanzhengma}",method = RequestMethod.POST)
-    public Result updatePassword(@RequestBody TbUser tbUser, @PathVariable("yanzhengma") String yanzhengma, @PathVariable("phone") String phone){
-
-
+    public Result updatePassword(@RequestBody TbUser tbUser, @PathVariable("yanzhengma") String yanzhengma, @PathVariable("phone") String phone) throws NoSuchAlgorithmException {
         String yan="";
         String key=phone+"update";
         MyLog.logger.info("KEY="+key);
@@ -181,30 +152,24 @@ public class UserManagerController {
         Criteria criteria = Criteria.where("key").is(key);
         query.addCriteria(criteria);
         TemporaryStorage tem = mongoTemplate.findOne(query, TemporaryStorage.class, "shundiStorage");
-
         if(tem==null){
-
             return  new Result(false,"请发送验证码");
-        }
-        else{
-
+        } else{
             yan= (String) tem.getData();
-
             if(yan==null||yan.equals("")||!yan.equals(yanzhengma)){
                 return  new Result(false,"验证码错误");
-            }
-            else {
-
+            } else {
                 Date date = new Date();
                 Date saveDate = tem.getSaveDate();
-
                 long i = date.getTime() - saveDate.getTime();
                 MyLog.logger.info("验证码存在时间：" + i);
-
-                if (i > 60 * 1000)
+                if (i > 60 * 1000) {
                     return new Result(false, "验证码过期");
+                }
             }
         }
+
+        mongoTemplate.remove(query,"shundiStorage");
         MyLog.logger.info("更新用户密码："+tbUser);
         Result result = userService.updatePassword(tbUser);
         return  result;

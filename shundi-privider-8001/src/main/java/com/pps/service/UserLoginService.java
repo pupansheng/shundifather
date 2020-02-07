@@ -3,6 +3,8 @@ package com.pps.service;
 import com.pps.pojo.TbUser;
 import com.pps.pojo.group.Result;
 
+import java.security.NoSuchAlgorithmException;
+
 /*
  * @Author Pupansheng
  * @Description // 登录相关接口
@@ -21,7 +23,7 @@ public interface UserLoginService {
      * @return 
      **/
     
-     Result loginWithAccount(TbUser tbUser);
+     Result loginWithAccount(TbUser tbUser) throws NoSuchAlgorithmException;
     /*
      * @Author Pupansheng
      * @Description // 短信登录

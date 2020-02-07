@@ -1,6 +1,8 @@
 package com.pps.controller;
 
 import com.pps.MyLog;
+import com.pps.pojo.group.Result;
+import com.pps.util.FastDFSClient;
 import com.pps.util.IdWorker;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,11 +33,13 @@ public class uploadController {
 
     @Value("${imagePath}")
     String imagePath;
+    @Value("${FILE_SERVER_URL}")
+    private String FILE_SERVER_URL;//文件服务器地址
     @ApiOperation(value="上传文件 文件名必须为file", notes="")
     @RequestMapping(value = "/upload",method = RequestMethod.POST)
     public Map upload2(MultipartFile file) throws IOException {
 
-        Map map=new HashMap();
+    /*    Map map=new HashMap();
         if(file==null){
 
             MyLog.logger.info("文件上传：文件为空");
@@ -76,8 +80,36 @@ public class uploadController {
 
         }
 
-        return  map;
+        return  map;*/
 
+        Map map=new HashMap();
+        //1、取文件的扩展名
+        String originalFilename = file.getOriginalFilename();
+        String extName = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+        try {
+         //2、创建一个 FastDFS 的客户端
+            FastDFSClient fastDFSClient
+                    = new FastDFSClient("classpath:fdfs_client.conf");
+            //3、执行上传处理
+
+
+            String path = fastDFSClient.uploadFile(file.getBytes(), extName);
+
+
+            //4、拼接返回的 url 和 ip 地址，拼装成完整的 url
+            String url = FILE_SERVER_URL + path;
+             MyLog.logger.info("返回地址："+url);
+             map.put("status",true);
+             map.put("url",url);
+        } catch (Exception e) {
+            e.printStackTrace();
+             map.put("status",false);
+
+
+        }
+
+
+            return  map;
 
     }
 

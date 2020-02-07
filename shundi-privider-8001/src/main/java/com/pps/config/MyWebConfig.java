@@ -1,5 +1,7 @@
 package com.pps.config;
 
+import com.pps.config.interceptor.MyInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
@@ -25,7 +27,8 @@ public class MyWebConfig implements WebMvcConfigurer {
 
     @Value("${imagePath}")
     String imagePath;
-
+    @Autowired
+    MyInterceptor myInterceptor;
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
 
@@ -53,7 +56,7 @@ public class MyWebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-       //registry.addInterceptor(new MyInterceptor()).addPathPatterns("/user/**","/driver/**","/order/**").excludePathPatterns("/user/register/**","/user/login/**","*.js","/css/*.css","/fonts/**","/images/**");
+       registry.addInterceptor(myInterceptor).addPathPatterns("/user/**","/order/**","/pay/**","/upload/**","/chatHistory/**").excludePathPatterns("/user/register/**","/user/login/**");
     }
 
     @Override

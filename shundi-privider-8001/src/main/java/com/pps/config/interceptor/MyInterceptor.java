@@ -3,64 +3,102 @@ package com.pps.config.interceptor;
 
 import com.alibaba.fastjson.JSONObject;
 import com.pps.MyLog;
-import com.pps.util.JwtHelper;
+import com.pps.config.compont.JWT;
+import com.pps.pojo.exception.NoAuthorizationException;
+import com.pps.pojo.mongo.TemporaryStorage;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+
 @Slf4j
+@Component
 public class MyInterceptor implements HandlerInterceptor {
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+    @Autowired
+    private JWT jwt;
 
     //在请求处理之前进行调用（Controller方法调用之前
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
 
-        //首先从请求头中获取jwt串，与页面约定好存放jwt值的请求头属性名为User-Token
-        String jwt = httpServletRequest.getHeader("User-Token");
-        log.info("[登录校验拦截器]-从header中获取的jwt为:{}", jwt);
-        //判断jwt是否有效
-        if(StringUtils.isNotBlank(jwt)){
-            //校验jwt是否有效,有效则返回json信息，无效则返回空
-            String retJson = JwtHelper.validateLogin(jwt);
-            log.info("[登录校验拦截器]-校验JWT有效性返回结果:{}", retJson);
-            //retJSON为空则说明jwt超时或非法
-            if(StringUtils.isNotBlank(retJson)){
+
+        // 需要验证
+        String token = getToken(httpServletRequest);
+
+        if (StringUtils.isBlank(token)) {
+            MyLog.logger.info("未登陆");
+            throw new NoAuthorizationException();
+        }
+        // 获取签名信息
+        Claims claims = jwt.getClaimByToken(token);
+        MyLog.logger.info("TOKEN: " + claims);
+        // 判断签名是否存在或过期
+        boolean b = claims==null || claims.isEmpty() || jwt.isTokenExpired(claims.getExpiration());
+        if (b) {
+            MyLog.logger.info("登陆过期");
+            throw new NoAuthorizationException();
+        }
 
 
-                     /* JSONObject jsonObject = JSONObject.parseObject(retJson);
-                      //校验客户端信息
 
-                      if (userAgent.equals(jsonObject.getString("userAgent"))) {
-                        //获取刷新后的jwt值，设置到响应头中
-                        httpServletResponse.setHeader("User-Token", jsonObject.getString("freshToken"));
-                        //将客户编号设置到session中
-                        // httpServletRequest.getSession().setAttribute(GlobalConstant.SESSION_CUSTOMER_NO_KEY, jsonObject.getString("userId"));
-*/
 
-                    return true;
-                }else{
-                      String userAgent = httpServletRequest.getHeader("User-Agent");
-                      log.warn("[登录校验拦截器]-客户端浏览器信息与JWT中存的浏览器信息不一致。当前浏览器信息:{}", userAgent);
-                }
-            }else {
-                log.warn("[登录校验拦截器]-JWT非法或已超时，重新登录");
+        return  true;
+
+      /*  Query query=new Query();
+        Criteria criteria = Criteria.where("key").is(token);
+        query.addCriteria(criteria);
+        TemporaryStorage tem = mongoTemplate.findOne(query, TemporaryStorage.class, "shundiStorage");
+        if(tem==null){
+
+            //输出响应流
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("status", "false");
+            jsonObject.put("code", "1000");
+            jsonObject.put("message", "未登录,权限错误");
+            httpServletResponse.setCharacterEncoding("UTF-8");
+            httpServletResponse.setContentType("application/json; charset=utf-8");
+            httpServletResponse.getOutputStream().write(jsonObject.toJSONString().getBytes("UTF-8"));
+            return false;
+
+
+        }else{
+
+            Date date=new Date();
+            Date saveDate = tem.getSaveDate();
+            long i = date.getTime()-saveDate.getTime();
+            MyLog.logger.info("token存在时间："+i/1000+"s");
+            if(i>60*1000*7) {
+
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("status", "false");
+                jsonObject.put("code", "1000");
+                jsonObject.put("message", "token已过期");
+                httpServletResponse.setCharacterEncoding("UTF-8");
+                httpServletResponse.setContentType("application/json; charset=utf-8");
+                httpServletResponse.getOutputStream().write(jsonObject.toJSONString().getBytes("UTF-8"));
+                return false;
+            }else{
+                return  true;
             }
 
+        }*/
 
-        //输出响应流
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("hmac", "");
-        jsonObject.put("status", "");
-        jsonObject.put("code", "4007");
-        jsonObject.put("msg", "未登录");
-        jsonObject.put("data", "");
-        httpServletResponse.setCharacterEncoding("UTF-8");
-        httpServletResponse.setContentType("application/json; charset=utf-8");
-        httpServletResponse.getOutputStream().write(jsonObject.toJSONString().getBytes("UTF-8"));
-        return false;
+
+
+
 
     }
     @Override
@@ -71,5 +109,15 @@ public class MyInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
 
+    }
+    /**
+     * 获取请求Token
+     */
+    private String getToken(HttpServletRequest request) {
+        String token = request.getHeader(jwt.getHeader());
+        if (StringUtils.isBlank(token)) {
+            token = request.getParameter(jwt.getHeader());
+        }
+        return token;
     }
 }

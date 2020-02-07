@@ -2,12 +2,15 @@ package com.pps.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.pps.MyLog;
+import com.pps.config.compont.JWT;
 import com.pps.pojo.TbUser;
+import com.pps.pojo.exception.NoAuthorizationException;
 import com.pps.pojo.group.Result;
 import com.pps.pojo.mongo.TemporaryStorage;
 import com.pps.service.UserLoginService;
-import com.pps.util.JwtHelper;
+import com.pps.service.UserService;
 import com.pps.util.UUIDUtil;
+import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -43,6 +46,12 @@ public class UserLoginController {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    UserService userService;
+    @Autowired
+    private JWT jwt;
+
+
 
     /*
      * @Author Pupansheng
@@ -57,25 +66,28 @@ public class UserLoginController {
 
     })
     @RequestMapping(value = "/login/account",method = RequestMethod.POST)
-    public Result loginWithAccount(@RequestBody TbUser tbUser,HttpServletRequest httpServletRequest) {
+    public Result loginWithAccount(@RequestBody TbUser tbUser,HttpServletRequest httpServletRequest) throws Exception{
 
         MyLog.logger.info("账号登录信息：" + tbUser);
         Result result = userLoginService.loginWithAccount(tbUser);
         if (result.isStatus()) {
 
-            //登陆成功 产生jwt token
-            Enumeration<String> attributeNames = httpServletRequest.getAttributeNames();
-            // JwtHelper.generateJWT();
+            Integer id = ((TbUser) result.getData()).getId();
+            String token = jwt.generateToken(id);
+            MyLog.logger.info("账号登录成功  产生token:"+token);
+            result.setMessage(token);
 
+
+            //登陆成功 产生jwt token
+          /*  Enumeration<String> attributeNames = httpServletRequest.getAttributeNames();
             String token = UUIDUtil.getUUID();
             TemporaryStorage temporaryStorage = new TemporaryStorage();
             temporaryStorage.setKey(token);
             temporaryStorage.setData(JSON.toJSONString(result.getData()));
             temporaryStorage.setSaveDate(new Date());
-
             mongoTemplate.save(temporaryStorage, "shundiStorage");
             MyLog.logger.info("产生token=" + token);
-            result.setMessage(token);
+            result.setMessage(token);*/
 
         }
 
@@ -102,15 +114,17 @@ public class UserLoginController {
         Result result = userLoginService.loginWithPhone(phone, yanzhengma);
         if (result.isStatus()) {
 
-            String token = UUIDUtil.getUUID();
+            Integer id = ((TbUser) result.getData()).getId();
+            String token = jwt.generateToken(id);
+            MyLog.logger.info("手机登录成功  产生token:"+token);
+            result.setMessage(token);
+          /*  String token = UUIDUtil.getUUID();
             TemporaryStorage temporaryStorage = new TemporaryStorage();
             temporaryStorage.setKey(token);
             temporaryStorage.setData(JSON.toJSONString(result.getData()));
             temporaryStorage.setSaveDate(new Date());
-
             mongoTemplate.save(temporaryStorage, "shundiStorage");
-            //request.getSession().setAttribute("user",result.getData());
-            result.setMessage(token);
+            result.setMessage(token);*/
 
         }
         return result;
@@ -136,15 +150,13 @@ public class UserLoginController {
         Result result = userLoginService.loginWithWeiXin(openid);
 
         if (result.isStatus()) {
-            String token = UUIDUtil.getUUID();
+           /* String token = UUIDUtil.getUUID();
             TemporaryStorage temporaryStorage = new TemporaryStorage();
             temporaryStorage.setKey(token);
             temporaryStorage.setData(JSON.toJSONString(result.getData()));
             temporaryStorage.setSaveDate(new Date());
-
             mongoTemplate.save(temporaryStorage, "shundiStorage");
-            //request.getSession().setAttribute("user",result.getData());
-            result.setMessage(token);
+            result.setMessage(token);*/
 
         }
         return result;
@@ -158,7 +170,7 @@ public class UserLoginController {
      * @Param
      * @return
      **/
-    @ApiOperation(value = "退出登录", notes = "")
+    @ApiOperation(value = "退出登录", notes = "已废弃")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "token", value = "客户端登录获得的票据", required = true, dataType = "String", paramType = "path"),
 
@@ -186,17 +198,27 @@ public class UserLoginController {
 
 
     })
-    @RequestMapping(value = "/login/{token}")
-    public Result checkIsLogin(@PathVariable String token) {
+    @RequestMapping(value = "/login/getUserInfo")
+    public Result checkIsLogin(HttpServletRequest httpServletRequest) {
 
-        String aceess_token = token;
+        String header = httpServletRequest.getHeader("shundi-token");
+        Claims claims = jwt.getClaimByToken(header);
+        MyLog.logger.info("自动登录TOKEN: " + claims);
+        // 判断签名是否存在或过期
+        boolean b = claims==null || claims.isEmpty() || jwt.isTokenExpired(claims.getExpiration());
+        if (b) {
+            throw new NoAuthorizationException();
+        }
 
-        MyLog.logger.info("access_token=" + aceess_token);
-        Query query = new Query();
+        String subject = claims.getSubject();
+        Result result  = userService.findUserByPrimaryId(Integer.parseInt(subject));
+        return result;
+
+      /*  Query query = new Query();
         Criteria criteria = Criteria.where("key").is(aceess_token);
         query.addCriteria(criteria);
         TemporaryStorage tem = mongoTemplate.findOne(query, TemporaryStorage.class, "shundiStorage");
-        System.out.println(tem);
+        MyLog.logger.info("票据用户："+tem);
         if (tem == null) {
             return new Result(false, "登陆失败");
         } else {
@@ -211,11 +233,13 @@ public class UserLoginController {
             } else {
 
                 Result result = new Result();
-                result.setData(tem.getData());
+                TbUser tbUser = JSON.parseObject((String) tem.getData(), TbUser.class);
+
+                result.setData(userService.findUserByPrimaryId(tbUser.getId()).getData());
                 result.setStatus(true);
                 return result;
             }
-        }
+        }*/
 
     }
 
