@@ -1,19 +1,24 @@
 package com.pps.controller;
 
+import com.alibaba.druid.util.StringUtils;
 import com.pps.MyLog;
+import com.pps.pojo.exception.UnknowException;
 import com.pps.pojo.group.Result;
 import com.pps.util.FastDFSClient;
 import com.pps.util.IdWorker;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -110,6 +115,44 @@ public class uploadController {
 
 
             return  map;
+
+    }
+
+
+    @RequestMapping("/download/{name}")
+    public  void  downloadApp(@PathVariable String name, HttpServletResponse response) throws IOException {
+
+        if(!StringUtils.isEmpty(name)){
+
+            String path="/user/local/filedownload/"+name;
+            Path path1 = Paths.get(path);
+            if(Files.exists(path1)){
+
+              byte [] a=  Files.readAllBytes(path1);
+                response.reset();
+                // 设置response的Header
+                response.addHeader("Content-Disposition", "attachment;filename=" + name);
+                response.addHeader("Content-Length", "" + a.length);
+                OutputStream toClient = new BufferedOutputStream(response.getOutputStream());
+                response.setContentType("application/octet-stream");
+                toClient.write(a);
+                toClient.flush();
+                toClient.close();
+
+            }else{
+
+                throw  new UnknowException("该文件不存在");
+            }
+
+        }else{
+
+            throw  new UnknowException("文件名为空");
+
+        }
+
+
+
+
 
     }
 

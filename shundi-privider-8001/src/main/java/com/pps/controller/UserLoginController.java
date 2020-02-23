@@ -144,12 +144,19 @@ public class UserLoginController {
 
 
     })
-    @RequestMapping(value = "/login/weixin/{openid}",method = RequestMethod.POST)
-    public Result LoginWithWeiXin(@PathVariable("openid") String openid) {
+    @RequestMapping(value = "/login/weixin",method = RequestMethod.GET)
+    public Result LoginWithWeiXin(String openid) {
 
         Result result = userLoginService.loginWithWeiXin(openid);
 
         if (result.isStatus()) {
+
+            Integer id = ((TbUser) result.getData()).getId();
+            String token = jwt.generateToken(id);
+            MyLog.logger.info("微信登录成功  产生token:"+token);
+            result.setMessage(token);
+
+
            /* String token = UUIDUtil.getUUID();
             TemporaryStorage temporaryStorage = new TemporaryStorage();
             temporaryStorage.setKey(token);
@@ -201,6 +208,7 @@ public class UserLoginController {
     @RequestMapping(value = "/login/getUserInfo")
     public Result checkIsLogin(HttpServletRequest httpServletRequest) {
 
+        MyLog.logger.info("微信登录："+new Date()+"||url=/login/getUserInfo");
         String header = httpServletRequest.getHeader("shundi-token");
         Claims claims = jwt.getClaimByToken(header);
         MyLog.logger.info("自动登录TOKEN: " + claims);
